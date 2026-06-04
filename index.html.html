@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>استيراد المطاعم - شاهين إكسبريس</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a010a; color: #fff; font-family: 'Segoe UI', sans-serif; min-height: 100vh; padding: 20px; }
+  h1 { color: #d4af37; text-align: center; margin-bottom: 5px; font-size: 1.5rem; }
+  .subtitle { text-align: center; color: #aaa; font-size: 12px; margin-bottom: 25px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; max-width: 1200px; margin: 0 auto 20px; }
+  .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.3); border-radius: 14px; padding: 18px; transition: 0.3s; }
+  .card:hover { border-color: #d4af37; }
+  .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .card-icon { font-size: 2rem; }
+  .card-name { font-weight: bold; font-size: 1rem; color: #d4af37; }
+  .card-count { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .sections { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+  .sec-tag { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); color: #d4af37; font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+  .status { font-size: 11px; padding: 6px 10px; border-radius: 8px; text-align: center; display: none; margin-top: 8px; font-weight: bold; }
+  .status.pending  { display: block; background: rgba(241,196,15,0.15); color: #f1c40f; border: 1px solid #f1c40f; }
+  .status.success  { display: block; background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid #2ecc71; }
+  .status.error    { display: block; background: rgba(231,76,60,0.15);  color: #e74c3c; border: 1px solid #e74c3c; }
+  .status.exists   { display: block; background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid #3498db; }
+  .btn-all { display: block; width: 100%; max-width: 500px; margin: 0 auto 20px; padding: 16px; background: #d4af37; color: #000; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+  .btn-all:hover { background: #f1d279; }
+  .btn-all:disabled { background: #555; color: #888; cursor: not-allowed; }
+  #summary { max-width: 500px; margin: 0 auto; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 15px; display: none; }
+  #summary h3 { color: #d4af37; margin-bottom: 10px; font-size: 14px; }
+  .sum-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .sum-row:last-child { border: none; }
+  .ok  { color: #2ecc71; } .err { color: #e74c3c; } .skip { color: #3498db; }
+</style>
+</head>
+<body>
+
+<h1>🦅 استيراد المطاعم — شاهين إكسبريس</h1>
+<p class="subtitle">92 مطعم جاهزة للإضافة — 7 مطاعم بمنيو كامل + 85 مطعم جديد</p>
+
+<button class="btn-all" id="mainBtn" onclick="importAll()">➕ إضافة جميع المطاعم الآن</button>
+
+<div class="grid" id="cardsGrid"></div>
+
+<div id="summary">
+  <h3>📊 ملخص الاستيراد</h3>
+  <div id="sumContent"></div>
+</div>
+
+<script>
+const SB_URL = "https://ricoslplbhphydhtrufe.supabase.co";
+const SB_KEY = "sb_publishable_k6LgEuwPLdCsBMCFC12wfQ_BSOJotuw";
+const _client = supabase.createClient(SB_URL, SB_KEY);
+
+// ======================================================
+// بيانات المطاعم السبعة كاملة
+// ======================================================
+const RESTAURANTS = [
+
+  // ==================== 1. زيدو تشيكن ====================
+  {
+    name: 'زيدو تشيكن',
+    icon: '🍗',
+    branch: 'الفرع الرئيسي',
+    logo: '',
+    delivery_fee: 5000,
+    open_time: '10:00',
+    close_time: '24:00',
+    contract: '',
+    profit_percent: 10,
+    maps_url: '',
+    specialty_type: 'restaurant',
+    profit_history: [],
+    restaurant_menu: [
+      { type:'cat', id:'cat_burger',     name:'البرغر',        icon:'🍔' },
+      { type:'cat', id:'cat_broasted',   name:'البروستد',      icon:'🍗' },
+      { type:'cat', id:'cat_shawarma',   name:'الشاورما',      icon:'🥙' },
+      { type:'cat', id:'cat_sandwich',   name:'السندويش',      icon:'🥪' },
+      { type:'cat', id:'cat_meals',      name:'الوجبات',       icon:'🍱' },
+      { type:'cat', id:'cat_appetizers', name:'المقبلات',      icon:'🥗' },
+      { type:'cat', id:'cat_drinks',     name:'المشروبات',     icon:'🥤' },
+
+      { type:'item', cid:'cat_burger', n:'برغر دجاج',            p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger', n:'برغر لحم',             p:40000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger', n:'أو ماي تشيز',          p:0,      img:'', desc:'قطعتان من الدجاج', extras:'' },
+      { type:'item', cid:'cat_burger', n:'بيغ ماك لحم',          p:50000,  img:'', desc:'قطعتان من اللحم', extras:'' },
+      { type:'item', cid:'cat_burger', n:'كينغ تشيز',            p:33000,  img:'', desc:'قطعة دجاج مقلي', extras:'' },
+      { type:'item', cid:'cat_burger', n:'كينغ تشيز دبل',        p:43000,  img:'', desc:'قطعتان من الدجاج', extras:'' },
+      { type:'item', cid:'cat_burger', n:'كينغ تشيز دبل أب',     p:51000,  img:'', desc:'قطعتان من الدجاج', extras:'' },
+
+      { type:'item', cid:'cat_broasted', n:'فروج بروستد',         p:0,      img:'', desc:'', extras:'نص / كامل' },
+      { type:'item', cid:'cat_broasted', n:'وجبة دبوس بروستد',    p:0,      img:'', desc:'دبابيس الدجاج', extras:'' },
+
+      { type:'item', cid:'cat_shawarma', n:'سندويش شاورما',        p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما',          p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما وزن',           p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'طوشكا شاورما',         p:55000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما بيرق',          p:15000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'سندويش شاورما مع جبنة',p:30000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما مكسيكي',        p:30000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما مكسيكي',   p:42000,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_sandwich', n:'سندويش سبايسي',        p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش سبايسي صغير',   p:29000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي',        p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي صغير',   p:28000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش شيش',           p:33000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش زنجر',          p:33000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش زنجر صغير',     p:33000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش إسكالوب',       p:38000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش ناغيت',         p:38000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فيليه',         p:38000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فرانسيسكو',     p:38000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويشة فاهيتا',       p:38000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش مكسيكانو',      p:38000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش بطاطا',         p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش إسكالوب صغير',  p:29000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويشة سمك هامور',    p:35000,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_meals', n:'وجبة سبايسي',            p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة كريسبي',            p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة إسكالوب',           p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة زنجر',              p:60000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة شيش',               p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فيليه',             p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة ناغيت',             p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فرانسيسكو',         p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فاهيتا',            p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة مكسيكانو',          p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة كيلو مشكل',         p:125000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة سمك هامور',         p:0,      img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_appetizers', n:'صحن بطاطا',          p:0,      img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة كريم ثوم ميدي', p:2500,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن مخلل',           p:3000,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة مايونيز',       p:2500,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'ربطة خبز',           p:10000,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_drinks', n:'بيبسي تنك',             p:9000,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي لتر',             p:11000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'لبن عيران',             p:5000,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي طوشي',            p:6500,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي جامبو',           p:20000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سفن أب',                p:11000,  img:'', desc:'', extras:'' },
+    ]
+  },
+
+  // ==================== 2. دومينوز شاورما ====================
+  {
+    name: 'دومينوز شاورما',
+    icon: '🥙',
+    branch: 'الفرع الرئيسي',
+    logo: '',
+    delivery_fee: 5000,
+    open_time: '10:00',
+    close_time: '24:00',
+    contract: '',
+    profit_percent: 10,
+    maps_url: '',
+    specialty_type: 'restaurant',
+    profit_history: [],
+    restaurant_menu: [
+      { type:'cat', id:'cat_shawarma', name:'الشاورما', icon:'🥙' },
+      { type:'cat', id:'cat_drinks',   name:'المشروبات', icon:'🥤' },
+
+      { type:'item', cid:'cat_shawarma', n:'سندويش شاورما دجاج',   p:0,    img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما دجاج',     p:0,    img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما دجاج بالوزن',   p:0,    img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_drinks', n:'بيبسي تنك', p:7000, img:'', desc:'', extras:'' },
+    ]
+  },
+
+  // ==================== 3. الغاوي ====================
+  {
+    name: 'الغاوي',
+    icon: '🍽️',
+    branch: 'الفرع الرئيسي',
+    logo: '',
+    delivery_fee: 5000,
+    open_time: '10:00',
+    close_time: '24:00',
+    contract: '',
+    profit_percent: 10,
+    maps_url: '',
+    specialty_type: 'restaurant',
+    profit_history: [],
+    restaurant_menu: [
+      { type:'cat', id:'cat_oriental',   name:'مأكولات شرقية',  icon:'🫕' },
+      { type:'cat', id:'cat_meals',      name:'الوجبات',        icon:'🍱' },
+      { type:'cat', id:'cat_sandwich',   name:'السندويش',       icon:'🥪' },
+      { type:'cat', id:'cat_appetizers', name:'المقبلات',       icon:'🥗' },
+      { type:'cat', id:'cat_falafel',    name:'الفلافل',        icon:'🧆' },
+      { type:'cat', id:'cat_drinks',     name:'المشروبات',      icon:'🥤' },
+
+      { type:'item', cid:'cat_oriental', n:'كمية مقلية باللحم الغنم',  p:6000,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_oriental', n:'كمية مشوية باللحم الغنم',  p:8000,   img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_oriental', n:'منسف نصف فروج',            p:90000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_oriental', n:'منسف عليه الفروجين',       p:400000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_oriental', n:'وجبة فخد',                 p:45000,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_meals', n:'وجبة اسكالوب',  p:45000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة شيش',      p:45000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة زنجر',     p:55000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة طوشكا',    p:75000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة سودة دجاج',p:45000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_sandwich', n:'سندويش سودة',    p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'برغر دجاج',      p:35000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش سبايسي',  p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش اسكالوب', p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي',  p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش زنجر',    p:40000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش شيش',     p:40000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_appetizers', n:'كيس مايونيز',   p:3000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة كريم ثوم', p:3000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن فتوش',      p:20000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن تبولة',     p:25000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'ربطة خبز',      p:9000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'عش البلبل',     p:6000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'كيس مخلل',      p:5000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'كيس ثوم أصغر',  p:3000,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_falafel', n:'سندويش فلافل', p:5000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_falafel', n:'قرص فلافل',    p:500,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_drinks', n:'بيبسي لتر',              p:10000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي عائلي',            p:18000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي تنك',              p:8000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'لبن عيران (لتر وربع)',   p:20000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'لبن عيران',              p:5000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سفن جامبو',              p:18000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'مندارين لتر',            p:10000, img:'', desc:'', extras:'' },
+    ]
+  },
+
+  // ==================== 4. أبو الروز - البرناوي ====================
+  {
+    name: 'أبو الروز - البرناوي',
+    icon: '🥙',
+    branch: 'الفرع الرئيسي',
+    logo: '',
+    delivery_fee: 5000,
+    open_time: '10:00',
+    close_time: '24:00',
+    contract: '',
+    profit_percent: 10,
+    maps_url: '',
+    specialty_type: 'restaurant',
+    profit_history: [],
+    restaurant_menu: [
+      { type:'cat', id:'cat_sandwich',   name:'السندويش',   icon:'🥪' },
+      { type:'cat', id:'cat_shawarma',   name:'الشاورما',   icon:'🥙' },
+      { type:'cat', id:'cat_meals',      name:'الوجبات',    icon:'🍱' },
+      { type:'cat', id:'cat_appetizers', name:'المقبلات',   icon:'🥗' },
+      { type:'cat', id:'cat_drinks',     name:'المشروبات',  icon:'🥤' },
+
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي',          p:35000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش سبايسي',          p:35000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش شيش طاووق عالفحم',p:35000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'تشيز برغر',              p:35000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش زنجر',            p:42000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش مكسيكانو',        p:35000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش معجوقة على الفحم',p:38000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_shawarma', n:'طوشكا دجاج عالفحم',  p:58000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما فرنسي',        p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما بلحة العريس',  p:48000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'بيرق شاورما',         p:12000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_meals', n:'وجبة شيش', p:55000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_appetizers', n:'علبة كريم ثوم', p:5000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة حد',       p:5000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_drinks', n:'بيبسي لتر',      p:12000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'علبة بيبسي تنك', p:8000,  img:'', desc:'', extras:'' },
+    ]
+  },
+
+  // ==================== 5. ألو تشكن ====================
+  {
+    name: 'ألو تشكن',
+    icon: '🍗',
+    branch: 'الفرع الرئيسي',
+    logo: '',
+    delivery_fee: 5000,
+    open_time: '10:00',
+    close_time: '24:00',
+    contract: '',
+    profit_percent: 10,
+    maps_url: '',
+    specialty_type: 'restaurant',
+    profit_history: [],
+    restaurant_menu: [
+      { type:'cat', id:'cat_sandwich',   name:'السندويش',        icon:'🥪' },
+      { type:'cat', id:'cat_pizza',      name:'البيتزا والكريب', icon:'🍕' },
+      { type:'cat', id:'cat_toshka',     name:'الطوشكا',         icon:'🌯' },
+      { type:'cat', id:'cat_shawarma',   name:'الشاورما',        icon:'🥙' },
+      { type:'cat', id:'cat_meals',      name:'الوجبات',         icon:'🍱' },
+      { type:'cat', id:'cat_appetizers', name:'المقبلات',        icon:'🥗' },
+      { type:'cat', id:'cat_drinks',     name:'المشروبات',       icon:'🥤' },
+
+      { type:'item', cid:'cat_sandwich', n:'سندويش تشكن بوي',           p:36000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش تويستر',             p:39000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش سبيك',               p:38000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فيليه هوت دوغ',      p:39000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش شيش طاووق',          p:36000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي ألو تشكن',    p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش اسكالوب ألو تشكن',   p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش زنجر ألو تشكن',      p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش مكسيكانو ألو تشكن',  p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فيليه ألو تشكن',     p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'هيلبينو زنجر',              p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي باربيكيو',    p:41000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فيلادلفيا',          p:43000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فيليه سوبريم',       p:39000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'بيغ ماك لحم',               p:53000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'وجبة برغر دجاج',            p:45000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'وجبة برغر لحم',             p:63000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'برغر لحم بيض وجبنة',        p:47000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_pizza', n:'كريب ألو تشكن',       p:46000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_pizza', n:'بيتزا بن كيك شاورما', p:85000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_toshka', n:'طوشكا دجاج', p:42000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_toshka', n:'طوشكا لحم',  p:62000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_shawarma', n:'سندويشة شاورما دجاج صاج صمون', p:25000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما فرنسي',           p:55000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما لحم بالصمون',          p:63000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما بانيه',           p:49000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'بيرق لحم',                   p:30000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_meals', n:'وجبة فرانسيسكو',          p:59000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة ستافلو',             p:63000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة زنجر',               p:59000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة زنجر ألو تشكن',      p:64000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة كريسبي',             p:59000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فيليه سوبريم',       p:59000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فيليه هوت دوغ',      p:70000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة مكسيكانو ألو تشكن',  p:64000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة شيش',                p:59000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة اسبانيولي',          p:61000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فاهيتا',             p:59000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة ملفيوم',             p:64000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة كريسبي باربيكيو',    p:64000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة اسكالوب ألو تشكن',   p:64000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة شاورما مكس',         p:82000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة هيلبينو زنجر',       p:64000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'بقعة العروس',             p:60000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة كريسبي رول',         p:42000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فيلادلفيا',          p:65000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة ناجيت',              p:49000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_appetizers', n:'صحن بطاطا',       p:25000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة كريم ثوم',   p:5000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة مخلل',       p:5000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن سرفيس كامل',  p:10000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة شطة',        p:5000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'كأس بطاطا',       p:7000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'سلطة سيزر',       p:29000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة كوكتيل',     p:5000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'سلطة كول سلو',    p:10000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_drinks', n:'بيبسي لتر',    p:10000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي جامبو',  p:18000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي تنك',    p:7000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'ميرندا تنك',   p:7000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سفن أب تنك',   p:7000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سفن أب لتر',   p:10000, img:'', desc:'', extras:'' },
+    ]
+  },
+
+  // ==================== 6. Check Mate ====================
+  {
+    name: 'Check Mate',
+    icon: '♟️',
+    branch: 'الفرع الرئيسي',
+    logo: '',
+    delivery_fee: 5000,
+    open_time: '10:00',
+    close_time: '24:00',
+    contract: '',
+    profit_percent: 10,
+    maps_url: '',
+    specialty_type: 'restaurant',
+    profit_history: [],
+    restaurant_menu: [
+      { type:'cat', id:'cat_sandwich',   name:'السندويش',      icon:'🥪' },
+      { type:'cat', id:'cat_broasted',   name:'البروستد',      icon:'🍗' },
+      { type:'cat', id:'cat_meals',      name:'الوجبات',       icon:'🍱' },
+      { type:'cat', id:'cat_shawarma',   name:'الشاورما',      icon:'🥙' },
+      { type:'cat', id:'cat_pizza',      name:'البيتزا',       icon:'🍕' },
+      { type:'cat', id:'cat_burger_meat',name:'برغر اللحم',    icon:'🍔' },
+      { type:'cat', id:'cat_burger_chk', name:'برغر الدجاج',   icon:'🍔' },
+      { type:'cat', id:'cat_potato',     name:'البطاطا',       icon:'🍟' },
+      { type:'cat', id:'cat_appetizers', name:'المقبلات',      icon:'🥗' },
+      { type:'cat', id:'cat_drinks',     name:'المشروبات',     icon:'🥤' },
+
+      { type:'item', cid:'cat_sandwich', n:'سندويش زنجر',         p:39000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش سبايسي',       p:37000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش اسكالوب',      p:37000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش شيش',          p:37000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فيليه سوبريم', p:39000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي',       p:37000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فاهيتا',       p:38000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_broasted', n:'فروج بروستد حلو', p:0,     img:'', desc:'', extras:'نص / كامل' },
+      { type:'item', cid:'cat_broasted', n:'فروج بروستد حار', p:0,     img:'', desc:'', extras:'نص / كامل' },
+      { type:'item', cid:'cat_broasted', n:'وجبة دبابيس',    p:60000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_meals', n:'وجبة زنجر',         p:61000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة سبايسي',       p:55000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة اسكالوب',      p:55000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة شيش',          p:55000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فيليه سوبريم', p:60000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة كريسبي',       p:55000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_shawarma', n:'سندويش شاورما شيك ميت', p:38000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'سندويش شاورما',         p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما بريد',           p:13000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'سندويش شاورما شامية',   p:28000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما بالوزن',         p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما عربي',      p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما إيطالي',    p:68000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_pizza', n:'بيتزا فصول أربعة',     p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_pizza', n:'بيتزا بيبيروني',       p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_pizza', n:'بيتزا شيك ميت داينمت', p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_pizza', n:'بيتزا مارغريتا',       p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_pizza', n:'بيتزا شاورما',         p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_pizza', n:'بيتزا دجاج باربيكيو',  p:0, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_burger_meat', n:'تيسي لحم برغر',        p:48000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_meat', n:'تشيز ديلوكس لحم برغر', p:48000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_meat', n:'ماشروم لحم برغر',      p:48000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_meat', n:'سموكي برغر',           p:45000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_burger_chk', n:'جراند سبيشيل دجاج برغر',      p:38000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_chk', n:'تشيز برغر',                    p:38000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_chk', n:'تيسي دجاج برغر',              p:39000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_chk', n:'برغر كاريزي',                 p:38000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_chk', n:'وجبة هابي ميل (للأطفال)',      p:28000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_burger_chk', n:'جراند سبيشيل سبايسي هالبينو', p:39000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_potato', n:'سندويش بطاطا', p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_potato', n:'علبة بطاطا',   p:0, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_appetizers', n:'علبة سلطة سيزر', p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'علبة مخلل',      p:3000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'ربطة خبز',       p:10000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_drinks', n:'لبن عيران',          p:5000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'برتقال تانك كبير',   p:8000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سفن أب تانك كبير',   p:8000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سفن أب ليتر',        p:11000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي ليتر',         p:11000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'فانتا تنك برتقال',   p:6000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'كوكا كولا تنك',      p:8000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سبرايت تنك',         p:8000,  img:'', desc:'', extras:'' },
+    ]
+  },
+
+  // ==================== 7. الفرداوي ====================
+  {
+    name: 'الفرداوي',
+    icon: '🫕',
+    branch: 'الفرع الرئيسي',
+    logo: '',
+    delivery_fee: 5000,
+    open_time: '10:00',
+    close_time: '24:00',
+    contract: '',
+    profit_percent: 10,
+    maps_url: '',
+    specialty_type: 'restaurant',
+    profit_history: [],
+    restaurant_menu: [
+      { type:'cat', id:'cat_oriental',   name:'مأكولات شرقية',  icon:'🫕' },
+      { type:'cat', id:'cat_mansaf',     name:'المنسف',         icon:'🍚' },
+      { type:'cat', id:'cat_fish',       name:'السمك',          icon:'🐟' },
+      { type:'cat', id:'cat_grills',     name:'المشاوي',        icon:'🔥' },
+      { type:'cat', id:'cat_rawmeat',    name:'لحوم نيئة',      icon:'🥩' },
+      { type:'cat', id:'cat_meals',      name:'الوجبات',        icon:'🍱' },
+      { type:'cat', id:'cat_shawarma',   name:'الشاورما',       icon:'🥙' },
+      { type:'cat', id:'cat_sandwich',   name:'السندويش',       icon:'🥪' },
+      { type:'cat', id:'cat_appetizers', name:'المقبلات',       icon:'🥗' },
+      { type:'cat', id:'cat_drinks',     name:'المشروبات',      icon:'🥤' },
+
+      { type:'item', cid:'cat_oriental', n:'كيلو لحم بعجين غنم', p:310000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_oriental', n:'قرص كبة مشوية',      p:12000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_oriental', n:'قرص كبة مقلية',      p:10000,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_mansaf', n:'منسف لحم',                 p:290000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_mansaf', n:'منسف فروج',                p:150000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_mansaf', n:'منسف (1) كغ فخد',          p:75000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_mansaf', n:'منسف فروج مسحب بالفحم',    p:150000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_fish', n:'كيلو سمك ترويت مشوي', p:125000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_fish', n:'كيلو سمك مشط مشوي',   p:125000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_fish', n:'كيلو سمك أجاج مشوي',  p:200000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_grills', n:'شيش طاووق مشوي',    p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_grills', n:'جوانح مشوية',       p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_grills', n:'كباب غنم مشوي',     p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_grills', n:'كباب فروج مشوي',    p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_grills', n:'فروج مسحب عالفحم',  p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_grills', n:'فروج مشوي عالمكينة',p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_grills', n:'شقف غنم مشوي',      p:0, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_rawmeat', n:'لحم خاروف',   p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_rawmeat', n:'شقف غنم نية', p:0, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_meals', n:'وجبة شيش (200 غرام)', p:45000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة زنجر',           p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فاهيتا',         p:60000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة فيليه',          p:50000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة مكسيكانو',       p:60000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة اسكالوب',        p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة كريسبي',         p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_meals', n:'وجبة سبايسي',         p:0,     img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_shawarma', n:'سندويش شاورما',   p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'وجبة شاورما',     p:0, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_shawarma', n:'شاورما بالوزن',   p:0, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_sandwich', n:'سندويش زنجر',     p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فاهيتا',   p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش فيليه',    p:40000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش مكسيكانو', p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش اسكالوب',  p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش شيش',      p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كريسبي',   p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش سبايسي',   p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'برغر دجاج',       p:35000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش بطاطا',    p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كباب فروج',p:30000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش كباب غنم', p:75000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_sandwich', n:'سندويش شقف',      p:75000, img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_appetizers', n:'صحن إنكليزي كبير',  p:50000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'كمة نية',            p:40000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن تبولة',          p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن فتوش',           p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن بطاطا',          p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن رز',             p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'برك جبنة',           p:3000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'حمص بطحينة بالوزن',  p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'متبل بالوزن',        p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن لبن بخيار',      p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'ربطة خبز',           p:10000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن سرفيس',          p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن سلطة',           p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن جرجير',          p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'بابا غنوج بالوزن',   p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'دقة بالوزن',         p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن حمص بالطحينة',   p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن دقة',            p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن بابا غنوج',      p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'صحن متبل',           p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_appetizers', n:'قطعة يالنجي',        p:5000,  img:'', desc:'', extras:'' },
+
+      { type:'item', cid:'cat_drinks', n:'بيبسي عائلي',    p:20000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'لبن عيران',      p:0,     img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي لتر',      p:12000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'بيبسي تنك',      p:8000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'كوكا كولا تنك',  p:7000,  img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'سفن اب عائلي',   p:20000, img:'', desc:'', extras:'' },
+      { type:'item', cid:'cat_drinks', n:'فانتا برتقال',   p:5000,  img:'', desc:'', extras:'' },
+    ]
+  },
+
+  // ==================== المطاعم الجديدة ====================
+
+  { name:'مطعم الغاوي',                          icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'سيتي برغر - City Burger',               icon:'🍔', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيتزا وفطائر ابو الليث',                icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'Check Mate',                             icon:'♟️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم وكافيه بيت الباشا',                icon:'☕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بروستد فواز بارودي',                    icon:'🍗', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'Pink Pizza',                             icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ملك الشاورما والبروستد الطازج',          icon:'🥙', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم ومشاوي زفزوق',                     icon:'🔥', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيتزا ومعجنات أبو العر',                icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'Motobox Chicken',                        icon:'🍗', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيت المجوس والمندي للمأكولات الخليجية', icon:'🍚', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيتزا خايم',                            icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'طلب كايتن',                             icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ركن الطيبات',                           icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مأكولات جنيد',                          icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'تشيز هاوس - Cheese House',              icon:'🧀', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم وكافيه نار و بهار',                icon:'🌶️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'أحمد تانتوني - Ahmad Tantuni',           icon:'🌯', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم الفداوي',                          icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'أبو الزوز - المزناوي',                  icon:'🥙', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيتزا ريو - Pizza Rio',                  icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'دومينوز باربيكيو - Dominos BBQ',         icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مندى المكلا',                           icon:'🍚', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيبرس',                                 icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ألو تشكن - Alo Chicken',                 icon:'🍗', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم أبو تيت',                          icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'فلافل أبو عمر المصري',                  icon:'🧆', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'سلايس بيتزا - Slice Pizza',              icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم طيبة',                             icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'دومينوز بيتزا - Dominos pizza',          icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'توب شيف - Top Chef',                     icon:'👨‍🍳', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم وفروج الإيمان',                    icon:'🍗', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'Lolo Kitchen',                           icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيتزا ابن العم',                        icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ركن المندي',                            icon:'🍚', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ذا هوك - The Hook',                      icon:'🎣', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم أبو النواس',                       icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'Alkaram Food',                           icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم يا مال الشام',                     icon:'🥙', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطاعم فطاز',                            icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'Albashas - مطعم الباشا',                icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'TARRAS Restaurant - مطعم التراس',        icon:'🌿', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'X Food - اكس فود',                      icon:'❌', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'دولي بيتزا - Dolce Pizza',               icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مندى أبو الزوز',                        icon:'🍚', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مستر بطاطا - MR.POTATO',                icon:'🥔', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'كوين كيتشن - Queen Kitchen',             icon:'👑', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'فريند - friend',                         icon:'🤝', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'غولدن روف - Golden Roof',                icon:'🏆', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'سجل تايم - Sujuk Time',                  icon:'🌭', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'أبو حسين أصل الحمص بزيت (1960)',         icon:'🫘', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'فطائر وشاورما تنورين',                  icon:'🥙', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم شاورما الكرم - الدباشة',            icon:'🥙', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم الكريم',                           icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'كزيي شيف',                              icon:'👨‍🍳', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم الريس',                            icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ملحمه و مشاوي العصفور',                 icon:'🔥', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'تشكن تايم - Chicken Time (جنوب الملعب)', icon:'🍗', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'تيك تاك',                               icon:'⏰', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'النكهة الشامية',                        icon:'🥙', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم وملحمة خلدون الحواني',             icon:'🥩', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم دايموند فود',                      icon:'💎', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'تشكن واو',                              icon:'🍗', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم و ملحمة الوليد',                   icon:'🥩', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيت الاغوات',                           icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'كوج بيتزا',                             icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ملحمة ومعجنات الأيادي',                 icon:'🥐', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم زلوح',                             icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ستيك وينجر',                            icon:'🥩', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم الحطاب',                           icon:'🔥', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'سناك برير',                             icon:'🍿', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'منؤوشة ع الصاج',                        icon:'🥙', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'آراكس - Arax',                           icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'أفران لبنان الحديثة',                   icon:'🥐', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيتزا ومعجنات العرواني',                icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'أطيب بيتزا',                            icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'أفران وياسيري مكة',                     icon:'🥐', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'بيتزا و فطائر بر الوالدين',             icon:'🍕', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'ويليام - William',                       icon:'🍔', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+  { name:'مطعم الكرم - سوق الحدادين',             icon:'🍽️', branch:'الفرع الرئيسي', logo:'', delivery_fee:5000, open_time:'10:00', close_time:'24:00', contract:'', profit_percent:10, maps_url:'', specialty_type:'restaurant', profit_history:[], restaurant_menu:[] },
+
+]; // نهاية RESTAURANTS
+
+
+// ======================================================
+// بناء الكروت وتشغيل الاستيراد
+// ======================================================
+function buildCards() {
+  const grid = document.getElementById('cardsGrid');
+  RESTAURANTS.forEach((r, i) => {
+    const cats  = r.restaurant_menu.filter(m => m.type === 'cat');
+    const items = r.restaurant_menu.filter(m => m.type === 'item');
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.id = 'card_' + i;
+    div.innerHTML = `
+      <div class="card-header">
+        <div class="card-icon">${r.icon}</div>
+        <div>
+          <div class="card-name">${r.name}</div>
+          <div class="card-count">${cats.length} أقسام · ${items.length} منتج</div>
+        </div>
+      </div>
+      <div class="sections">
+        ${cats.map(c => `<span class="sec-tag">${c.icon} ${c.name}</span>`).join('')}
+      </div>
+      <div class="status" id="status_${i}">—</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function setStatus(i, type, msg) {
+  const el = document.getElementById('status_' + i);
+  el.className = 'status ' + type;
+  el.innerText = msg;
+}
+
+async function importAll() {
+  const btn = document.getElementById('mainBtn');
+  btn.disabled = true;
+  btn.innerText = '⏳ جاري الاستيراد...';
+
+  // جلب الأسماء الموجودة
+  const { data: existing } = await _client.from('restaurants').select('name');
+  const existingNames = (existing || []).map(r => r.name);
+
+  let added = 0, skipped = 0, failed = 0;
+
+  for (let i = 0; i < RESTAURANTS.length; i++) {
+    const r = RESTAURANTS[i];
+    setStatus(i, 'pending', '⏳ جاري الإضافة...');
+
+    if (existingNames.includes(r.name)) {
+      setStatus(i, 'exists', '✅ موجود مسبقاً — تم التخطي');
+      skipped++;
+      continue;
+    }
+
+    const payload = {
+      name:            r.name,
+      branch:          r.branch,
+      logo:            r.logo,
+      delivery_fee:    r.delivery_fee,
+      open_time:       r.open_time,
+      close_time:      r.close_time,
+      contract:        r.contract,
+      restaurant_menu: r.restaurant_menu,
+      profit_percent:  r.profit_percent,
+      maps_url:        r.maps_url,
+      specialty_type:  r.specialty_type,
+      profit_history:  r.profit_history,
+    };
+
+    const { error } = await _client.from('restaurants').insert([payload]);
+
+    if (error) {
+      setStatus(i, 'error', '❌ فشل: ' + error.message);
+      failed++;
+    } else {
+      const items = r.restaurant_menu.filter(m => m.type === 'item').length;
+      setStatus(i, 'success', `✅ تمت الإضافة — ${items} منتج`);
+      added++;
+    }
+  }
+
+  // ملخص
+  const sumDiv = document.getElementById('summary');
+  sumDiv.style.display = 'block';
+  document.getElementById('sumContent').innerHTML = `
+    <div class="sum-row"><span>تمت إضافتهم</span><span class="ok">${added} مطعم ✅</span></div>
+    <div class="sum-row"><span>موجودون مسبقاً</span><span class="skip">${skipped} مطعم</span></div>
+    <div class="sum-row"><span>فشل الإضافة</span><span class="err">${failed} مطعم</span></div>
+    <div class="sum-row" style="margin-top:8px; font-weight:bold;"><span>المجموع</span><span>${RESTAURANTS.length} مطعم</span></div>
+  `;
+
+  btn.innerText = added > 0 ? `✅ تمت إضافة ${added} مطعم — افتح لوحة الإدارة!` : '⚠️ لم يُضف أي مطعم جديد';
+  btn.style.background = added > 0 ? '#2ecc71' : '#e74c3c';
+  btn.style.color = '#000';
+
+  sumDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+buildCards();
+</script>
+</body>
+</html>
