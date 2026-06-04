@@ -230,6 +230,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);min-height:
   .stat-row{grid-template-columns:repeat(2,1fr);}.content{padding:14px;}
   .three-col{grid-template-columns:1fr 1fr;}
 }
+
+.sched-tab{padding:7px 16px;border-radius:8px;border:none;background:none;color:var(--text3);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;}
+.sched-tab.active{background:var(--blue);color:white;}
+.day-cell{min-height:80px;border:1px solid var(--border);border-radius:8px;padding:6px;cursor:pointer;transition:background 0.15s;}
+.day-cell:hover{background:var(--card2);}
+.day-cell.today{border-color:var(--blue);background:rgba(59,130,246,0.08);}
+.day-cell.has-lecture{border-color:rgba(34,197,94,0.3);}
+.lec-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);display:inline-block;margin:1px;}
+.lec-dot.active{background:var(--green);}
+.time-slot{display:flex;gap:10px;align-items:stretch;margin-bottom:8px;}
+.time-label{font-size:10px;color:var(--text3);width:44px;flex-shrink:0;padding-top:2px;text-align:left;}
+.lec-block{flex:1;padding:10px 12px;border-radius:8px;border-right:3px solid;background:var(--bg2);}
+.lec-block-name{font-size:12px;font-weight:600;}
+.lec-block-meta{font-size:10px;color:var(--text3);margin-top:2px;}
+.code-pill{font-family:monospace;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--blue-l);letter-spacing:0.5px;}
+
 .hidden{display:none!important;}
 .divider{height:1px;background:var(--border);margin:14px 0;}
 </style>
@@ -293,6 +309,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);min-height:
       <div class="nav-lbl">الرئيسية</div>
       <button class="nav-item active" onclick="showSec('home')"><i class="fas fa-home"></i> لوحة التحكم</button>
       <button class="nav-item" onclick="showSec('courses')"><i class="fas fa-book-open"></i> موادي الدراسية</button>
+      <button class="nav-item" onclick="showSec('schedule')"><i class="fas fa-calendar-alt"></i> جدول المحاضرات</button>
       <button class="nav-item" onclick="showSec('session')"><i class="fas fa-broadcast-tower"></i> جلسة الحضور <span class="nb" id="active-session-badge" style="display:none">مفتوحة</span></button>
       <div class="nav-lbl" style="margin-top:8px">التقارير</div>
       <button class="nav-item" onclick="showSec('reports')"><i class="fas fa-chart-bar"></i> تقارير الحضور</button>
@@ -365,6 +382,69 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);min-height:
           <div class="loader"><div class="spin"></div></div>
         </div>
       </div>
+
+      <!-- SCHEDULE -->
+      <div class="sec hidden" id="sec-schedule">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <h2 style="font-size:17px;font-weight:700">جدول المحاضرات</h2>
+          <button class="btn btn-blue btn-sm" onclick="openAddLectureModal()"><i class="fas fa-plus"></i> إضافة محاضرة</button>
+        </div>
+
+        <!-- View Tabs -->
+        <div style="display:flex;gap:4px;background:var(--bg2);border-radius:10px;padding:4px;margin-bottom:16px;width:fit-content">
+          <button class="sched-tab active" id="tab-weekly" onclick="switchSchedTab('weekly')">أسبوعي</button>
+          <button class="sched-tab" id="tab-monthly" onclick="switchSchedTab('monthly')">شهري</button>
+          <button class="sched-tab" id="tab-daily" onclick="switchSchedTab('daily')">يومي</button>
+        </div>
+
+        <!-- Weekly View -->
+        <div id="view-weekly">
+          <div id="weekly-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+        </div>
+
+        <!-- Monthly View -->
+        <div id="view-monthly" class="hidden">
+          <div class="card">
+            <div class="card-head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <button onclick="changeMonth(-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8250;</button>
+                <div class="card-title" id="month-label" style="margin:0">الشهر</div>
+                <button onclick="changeMonth(1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8249;</button>
+              </div>
+            </div>
+            <div id="monthly-calendar"></div>
+          </div>
+        </div>
+
+        <!-- Daily View -->
+        <div id="view-daily" class="hidden">
+          <div class="card">
+            <div class="card-head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <button onclick="changeDay(-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8250;</button>
+                <div class="card-title" id="day-label" style="margin:0">اليوم</div>
+                <button onclick="changeDay(1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8249;</button>
+              </div>
+            </div>
+            <div id="daily-schedule"></div>
+          </div>
+        </div>
+
+        <!-- All Lectures Table -->
+        <div class="card" style="margin-top:14px">
+          <div class="card-head">
+            <div class="card-title"><i class="fas fa-list"></i> جميع المحاضرات المجدولة</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadSchedule()"><i class="fas fa-sync"></i></button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="tbl">
+              <thead><tr><th>المادة</th><th>اليوم</th><th>الوقت</th><th>القاعة</th><th>الشعبة</th><th>رقم المحاضرة</th><th>الكود</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+              <tbody id="schedule-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
 
       <!-- SESSION -->
       <div class="sec hidden" id="sec-session">
@@ -557,6 +637,74 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);min-height:
 </div>
 </div>
 
+
+<!-- ADD LECTURE MODAL -->
+<div class="modal-overlay hidden" id="add-lec-modal">
+<div class="modal">
+  <div class="modal-title"><i class="fas fa-plus-circle" style="color:var(--blue)"></i> إضافة محاضرة جديدة</div>
+  <div class="modal-sub">حدد تفاصيل المحاضرة لإضافتها إلى الجدول</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="form-group" style="grid-column:1/-1">
+      <label>المادة الدراسية</label>
+      <select class="inp" id="lec-course"></select>
+    </div>
+    <div class="form-group">
+      <label>اليوم</label>
+      <select class="inp" id="lec-day">
+        <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option>
+        <option>الأربعاء</option><option>الخميس</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>رقم المحاضرة</label>
+      <input type="number" class="inp" id="lec-num" placeholder="1" min="1">
+    </div>
+    <div class="form-group">
+      <label>وقت البداية</label>
+      <input type="time" class="inp" id="lec-start">
+    </div>
+    <div class="form-group">
+      <label>وقت النهاية</label>
+      <input type="time" class="inp" id="lec-end">
+    </div>
+    <div class="form-group">
+      <label>القاعة</label>
+      <input type="text" class="inp" id="lec-room" placeholder="قاعة 204">
+    </div>
+    <div class="form-group">
+      <label>التكرار</label>
+      <select class="inp" id="lec-repeat">
+        <option value="once">مرة واحدة</option>
+        <option value="weekly">أسبوعياً</option>
+        <option value="monthly">شهرياً</option>
+      </select>
+    </div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-top:4px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px"><i class="fas fa-key" style="color:var(--blue-l)"></i> سيتم توليد كود فريد تلقائياً</div>
+    <div style="font-family:monospace;font-size:14px;font-weight:700;color:var(--blue-l)" id="preview-code">LEC-XXXXXXX</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('add-lec-modal')">إلغاء</button>
+    <button class="btn btn-blue" onclick="saveLecture()" style="flex:1"><i class="fas fa-save"></i> حفظ المحاضرة</button>
+  </div>
+</div>
+</div>
+
+<!-- LECTURE DETAIL MODAL -->
+<div class="modal-overlay hidden" id="lec-detail-modal">
+<div class="modal">
+  <div class="modal-title" id="ldc-title">تفاصيل المحاضرة</div>
+  <div class="modal-sub" id="ldc-sub"></div>
+  <div id="ldc-content"></div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal('lec-detail-modal')">إغلاق</button>
+    <button class="btn btn-blue btn-sm" id="ldc-open-btn"><i class="fas fa-play"></i> فتح جلسة الحضور</button>
+    <button class="btn btn-danger btn-sm" id="ldc-delete-btn"><i class="fas fa-trash"></i> حذف</button>
+  </div>
+</div>
+</div>
+
 <!-- NEW SESSION MODAL -->
 <div class="modal-overlay hidden" id="new-sess-modal">
 <div class="modal">
@@ -685,7 +833,7 @@ async function loadDoctorData() {
   const { data } = await sb.from('doctors').select('*').eq('user_id', currentUser.id).single();
   doctorData = data || { full_name: currentUser.email?.split('@')[0] || 'الدكتور', faculty: '--', department: '--', email: currentUser.email, user_id: currentUser.id };
   updateDoctorUI();
-  await Promise.all([loadCourses(), loadStats(), loadRecentSessions(), loadNotifications()]);
+  await Promise.all([loadCourses(), loadStats(), loadRecentSessions(), loadNotifications(), loadSchedule()]);
 }
 
 function updateDoctorUI() {
@@ -1201,7 +1349,7 @@ function showSec(id) {
   const el = document.getElementById('sec-'+id);
   if (el) { el.classList.remove('hidden'); el.classList.add('active'); }
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const titles = {home:'لوحة التحكم',courses:'موادي الدراسية',session:'جلسة الحضور',reports:'تقارير الحضور',students:'قوائم الطلاب',profile:'ملفي الشخصي',notifications:'الإشعارات'};
+  const titles = {home:'لوحة التحكم',courses:'موادي الدراسية',schedule:'جدول المحاضرات',session:'جلسة الحضور',reports:'تقارير الحضور',students:'قوائم الطلاب',profile:'ملفي الشخصي',notifications:'الإشعارات'};
   document.getElementById('tb-title').textContent = titles[id]||id;
   closeSb();
   if (id==='session' && activeSession) renderActiveSession();
@@ -1224,6 +1372,284 @@ function toast(msg, type='info') {
 }
 function editAttStatus(id) { toast('يمكن تعديل الحالة من جدول التقارير', 'info'); }
 function showCourseDetail(id) { showSec('reports'); }
+
+// ===== SCHEDULE =====
+let scheduleData = [];
+let currentMonth = new Date();
+let currentDay = new Date();
+let currentTab = 'weekly';
+
+function switchSchedTab(tab) {
+  currentTab = tab;
+  ['weekly','monthly','daily'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('view-'+t).classList.toggle('hidden', t!==tab);
+  });
+  if (tab==='monthly') renderMonthlyCalendar();
+  if (tab==='daily') renderDailyView();
+  if (tab==='weekly') renderWeeklyView();
+}
+
+async function loadSchedule() {
+  const { data } = await sb.from('lectures').select('*').order('day_of_week');
+  scheduleData = data || [];
+  renderWeeklyView();
+  renderScheduleTable();
+}
+
+function renderWeeklyView() {
+  const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
+  const colors = {'الأحد':'#3b82f6','الاثنين':'#22c55e','الثلاثاء':'#f59e0b','الأربعاء':'#a78bfa','الخميس':'#ef4444'};
+  const el = document.getElementById('weekly-grid');
+  if (!el) return;
+  el.innerHTML = days.map(day => {
+    const dayLecs = scheduleData.filter(l => l.day_of_week === day);
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden">
+      <div style="background:${colors[day]||'var(--blue)'};padding:10px 14px;font-size:12px;font-weight:700;color:white;display:flex;justify-content:space-between;align-items:center">
+        <span>${day}</span><span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:1px 8px;font-size:10px">${dayLecs.length} محاضرة</span>
+      </div>
+      <div style="padding:10px">
+        ${dayLecs.length ? dayLecs.map(l => `
+          <div style="padding:8px;background:var(--bg2);border-radius:8px;margin-bottom:6px;border-right:3px solid ${colors[day]||'var(--blue)'};cursor:pointer" onclick="showLectureDetail('${l.id}')">
+            <div style="font-size:11px;font-weight:600">${l.course_name||'--'}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${l.start_time||'--'} – ${l.end_time||'--'} · قاعة ${l.room||'--'}</div>
+            <div style="margin-top:4px"><span class="code-pill">${l.qr_code||'---'}</span></div>
+          </div>`).join('')
+        : `<div style="text-align:center;color:var(--text3);font-size:11px;padding:14px;opacity:0.6">لا محاضرات</div>`}
+        <button onclick="openAddLectureModalFor('${day}')" style="width:100%;background:none;border:1px dashed var(--border);border-radius:8px;padding:6px;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--font);margin-top:4px">
+          <i class="fas fa-plus"></i> إضافة
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMonthlyCalendar() {
+  const el = document.getElementById('monthly-calendar');
+  const lbl = document.getElementById('month-label');
+  if (!el || !lbl) return;
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  lbl.textContent = currentMonth.toLocaleDateString('ar-SY', { year:'numeric', month:'long' });
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const dayNames = ['أح','اث','ث','أر','خ','ج','س'];
+  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px">
+    ${dayNames.map(d=>`<div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">${d}</div>`).join('')}
+  </div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">`;
+  for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+  const arabicDays = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const dayName = arabicDays[date.getDay()];
+    const lecs = scheduleData.filter(l => l.day_of_week === dayName);
+    const isToday = date.toDateString() === today.toDateString();
+    html += `<div class="day-cell ${isToday?'today':''} ${lecs.length?'has-lecture':''}" onclick="selectDay(${year},${month},${d})">
+      <div style="font-size:11px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--blue-l)':'var(--text2)'};margin-bottom:3px">${d}</div>
+      <div>${lecs.slice(0,2).map(l=>`<div class="lec-dot ${l.is_active?'active':''}"></div>`).join('')}</div>
+      ${lecs.length > 2 ? `<div style="font-size:9px;color:var(--text3)">+${lecs.length-2}</div>` : ''}
+    </div>`;
+  }
+  el.innerHTML = html + '</div>';
+}
+
+function changeMonth(dir) { currentMonth.setMonth(currentMonth.getMonth() - dir); renderMonthlyCalendar(); }
+
+function selectDay(y, m, d) {
+  currentDay = new Date(y, m, d);
+  switchSchedTab('daily');
+}
+
+function renderDailyView() {
+  const el = document.getElementById('daily-schedule');
+  const lbl = document.getElementById('day-label');
+  if (!el || !lbl) return;
+  const arabicDays = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const dayName = arabicDays[currentDay.getDay()];
+  lbl.textContent = currentDay.toLocaleDateString('ar-SY', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const lecs = scheduleData.filter(l => l.day_of_week === dayName);
+  const colors = ['#3b82f6','#22c55e','#f59e0b','#a78bfa','#ef4444'];
+  if (!lecs.length) { el.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;font-size:12px">لا توجد محاضرات في هذا اليوم</div>'; return; }
+  el.innerHTML = lecs.map((l,i) => `
+    <div class="time-slot">
+      <div class="time-label">${l.start_time||'--'}</div>
+      <div class="lec-block" style="border-right-color:${colors[i%colors.length]};cursor:pointer" onclick="showLectureDetail('${l.id}')">
+        <div class="lec-block-name">${l.course_name||'--'}</div>
+        <div class="lec-block-meta"><i class="fas fa-door-open" style="font-size:9px"></i> قاعة ${l.room||'--'} · شعبة ${l.section||'--'} · ${l.end_time||'--'}</div>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+          <span class="code-pill"><i class="fas fa-key" style="font-size:8px"></i> ${l.qr_code||'---'}</span>
+          ${l.is_active ? '<span class="badge bg" style="font-size:9px">مفتوحة</span>' : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function changeDay(dir) { currentDay.setDate(currentDay.getDate() - dir); renderDailyView(); }
+
+function renderScheduleTable() {
+  const tbody = document.getElementById('schedule-tbody');
+  if (!tbody) return;
+  const colors = ['#3b82f6','#22c55e','#f59e0b','#a78bfa','#ef4444'];
+  tbody.innerHTML = scheduleData.length ? scheduleData.map((l,i) => `
+    <tr style="cursor:pointer" onclick="showLectureDetail('${l.id}')">
+      <td><div style="display:flex;align-items:center;gap:7px"><div style="width:3px;height:20px;border-radius:2px;background:${colors[i%colors.length]}"></div>${l.course_name||'--'}</div></td>
+      <td>${l.day_of_week||'--'}</td>
+      <td>${l.start_time||'--'} – ${l.end_time||'--'}</td>
+      <td>${l.room||'--'}</td>
+      <td>${l.section||'--'}</td>
+      <td>${l.lecture_number||'--'}</td>
+      <td><span class="code-pill">${l.qr_code||'---'}</span></td>
+      <td>${l.is_active ? '<span class="badge bg">مفتوحة</span>' : '<span class="badge bb">مجدولة</span>'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-blue btn-sm" onclick="event.stopPropagation();quickOpenSession('${l.id}')"><i class="fas fa-play"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteLecture('${l.id}')"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('')
+    : '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3)">لا توجد محاضرات مجدولة. اضغط "إضافة محاضرة" لإنشاء جدولك.</td></tr>';
+}
+
+function generateLectureCode(courseName, day, num) {
+  const courseInitials = (courseName||'LEC').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3);
+  const dayCode = {'الأحد':'SUN','الاثنين':'MON','الثلاثاء':'TUE','الأربعاء':'WED','الخميس':'THU'}[day] || 'LEC';
+  const rand = Math.random().toString(36).substr(2,4).toUpperCase();
+  return `${courseInitials}-${dayCode}-${String(num||1).padStart(2,'0')}-${rand}`;
+}
+
+function openAddLectureModal() {
+  const sel = document.getElementById('lec-course');
+  if (sel && allCourses.length) {
+    const unique = [...new Map(allCourses.map(c=>[c.course_name,c])).values()];
+    sel.innerHTML = unique.map(c=>`<option value="${c.id}" data-name="${c.course_name}" data-section="${c.section||''}">${c.course_name} - شعبة ${c.section||'--'}</option>`).join('');
+  }
+  updatePreviewCode();
+  document.getElementById('add-lec-modal').classList.remove('hidden');
+}
+
+function openAddLectureModalFor(day) {
+  openAddLectureModal();
+  const sel = document.getElementById('lec-day');
+  if (sel) sel.value = day;
+  updatePreviewCode();
+}
+
+function updatePreviewCode() {
+  const courseSel = document.getElementById('lec-course');
+  const day = document.getElementById('lec-day')?.value || '';
+  const num = document.getElementById('lec-num')?.value || '1';
+  const name = courseSel?.options[courseSel.selectedIndex]?.dataset?.name || '';
+  const code = generateLectureCode(name, day, num);
+  const el = document.getElementById('preview-code');
+  if (el) el.textContent = code;
+  return code;
+}
+
+['lec-course','lec-day','lec-num'].forEach(id => {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', updatePreviewCode);
+  }, 500);
+});
+
+async function saveLecture() {
+  const courseSel = document.getElementById('lec-course');
+  const courseId = courseSel?.value;
+  const day = document.getElementById('lec-day').value;
+  const num = parseInt(document.getElementById('lec-num').value) || 1;
+  const start = document.getElementById('lec-start').value;
+  const end = document.getElementById('lec-end').value;
+  const room = document.getElementById('lec-room').value.trim() || '--';
+  const repeat = document.getElementById('lec-repeat').value;
+
+  if (!courseId || !start || !end) { toast('أكمل الحقول المطلوبة (المادة، الوقت)', 'error'); return; }
+
+  const course = allCourses.find(c=>c.id===courseId);
+  const code = updatePreviewCode();
+
+  const lectureData = {
+    course_name: course?.course_name || '',
+    faculty: course?.faculty || '',
+    department: course?.department || '',
+    section: course?.section || '',
+    instructor_id: currentUser?.id,
+    day_of_week: day,
+    start_time: start,
+    end_time: end,
+    room,
+    lecture_number: num,
+    qr_code: code,
+    is_active: false
+  };
+
+  // For weekly/monthly, create multiple records
+  if (repeat === 'weekly') {
+    const records = Array.from({length:14},(_,i)=>({...lectureData, qr_code: generateLectureCode(course?.course_name||'', day, num+i), lecture_number: num+i}));
+    const { error } = await sb.from('lectures').insert(records);
+    if (error) { toast('خطأ: ' + error.message, 'error'); return; }
+    toast(`تم إنشاء 14 محاضرة أسبوعية بأكواد فريدة ✓`, 'success');
+  } else if (repeat === 'monthly') {
+    const records = Array.from({length:4},(_,i)=>({...lectureData, qr_code: generateLectureCode(course?.course_name||'', day, num+i), lecture_number: num+i}));
+    const { error } = await sb.from('lectures').insert(records);
+    if (error) { toast('خطأ: ' + error.message, 'error'); return; }
+    toast(`تم إنشاء 4 محاضرات شهرية بأكواد فريدة ✓`, 'success');
+  } else {
+    const { error } = await sb.from('lectures').insert(lectureData);
+    if (error) { toast('خطأ: ' + error.message, 'error'); return; }
+    toast('تم إضافة المحاضرة بكودها الفريد ✓', 'success');
+  }
+
+  closeModal('add-lec-modal');
+  await loadSchedule();
+  await loadCourses();
+}
+
+function showLectureDetail(id) {
+  const l = scheduleData.find(x=>x.id===id);
+  if (!l) return;
+  document.getElementById('ldc-title').textContent = l.course_name || 'محاضرة';
+  document.getElementById('ldc-sub').textContent = `${l.day_of_week||''} · ${l.start_time||''}–${l.end_time||''} · قاعة ${l.room||'--'}`;
+  document.getElementById('ldc-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      ${[['المادة',l.course_name],['الشعبة',l.section],['القاعة',l.room],['الكلية',l.faculty],
+         ['اليوم',l.day_of_week],['الوقت',(l.start_time||'--')+'–'+(l.end_time||'--')],
+         ['رقم المحاضرة',l.lecture_number],['الحالة',l.is_active?'مفتوحة':'مجدولة']
+        ].map(([k,v])=>`<div style="background:var(--bg2);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3)">${k}</div><div style="font-size:12px;font-weight:500;margin-top:2px">${v||'--'}</div></div>`).join('')}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px"><i class="fas fa-key"></i> كود المحاضرة الفريد</div>
+      <div style="font-family:monospace;font-size:18px;font-weight:800;color:var(--blue-l);letter-spacing:1px">${l.qr_code||'---'}</div>
+      <button onclick="copyCode('${l.qr_code}')" style="margin-top:8px;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--font)"><i class="fas fa-copy"></i> نسخ الكود</button>
+    </div>`;
+  document.getElementById('ldc-open-btn').onclick = () => { closeModal('lec-detail-modal'); quickOpenSession(id); };
+  document.getElementById('ldc-delete-btn').onclick = () => deleteLecture(id);
+  document.getElementById('lec-detail-modal').classList.remove('hidden');
+}
+
+async function quickOpenSession(lectureId) {
+  const l = scheduleData.find(x=>x.id===lectureId);
+  if (!l) return;
+  await sb.from('lectures').update({ is_active: false }).eq('is_active', true);
+  await sb.from('lectures').update({ is_active: true }).eq('id', lectureId);
+  activeSession = { id: lectureId, course_name: l.course_name, section: l.section, room: l.room, lecture_number: l.lecture_number };
+  showSec('session');
+  renderActiveSession();
+  document.getElementById('active-session-badge').style.display = 'inline';
+  toast('تم فتح جلسة: ' + l.course_name, 'success');
+}
+
+async function deleteLecture(id) {
+  if (!confirm('هل تريد حذف هذه المحاضرة؟')) return;
+  const { error } = await sb.from('lectures').delete().eq('id', id);
+  if (error) { toast('خطأ في الحذف', 'error'); return; }
+  closeModal('lec-detail-modal');
+  toast('تم حذف المحاضرة', 'success');
+  await loadSchedule();
+}
+
+function copyCode(code) {
+  navigator.clipboard.writeText(code).then(() => toast('تم نسخ الكود: ' + code, 'success'));
+}
+
 setDate();
 </script>
 </body>
