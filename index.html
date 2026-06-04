@@ -4,285 +4,205 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>رصد — لوحة الدكتور</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
-:root{
-  --bg:#0b1120;--bg2:#0f172a;--bg3:#1e293b;
-  --card:#162032;--card2:#1a2840;--card3:#1e3048;
-  --blue:#3b82f6;--blue2:#2563eb;--blue3:#1d4ed8;
-  --blue-l:#93c5fd;--blue-ll:#dbeafe;
-  --green:#22c55e;--green-l:#86efac;--green-ll:#dcfce7;
-  --red:#ef4444;--red-l:#fca5a5;--amber:#f59e0b;--amber-l:#fcd34d;
-  --text1:#f8fafc;--text2:#cbd5e1;--text3:#94a3b8;--muted:#475569;
-  --border:rgba(59,130,246,0.15);--border2:rgba(59,130,246,0.3);
-  --font:'Cairo',sans-serif;
-  --r:10px;--rl:16px;--rxl:22px;
+:root {
+  --g1:#0a2e1f; --g2:#0f4a32; --g3:#1a7a52; --g4:#22a06b; --g5:#2dd48a;
+  --bg:#0d1f17; --bg2:#122a1e; --card:#1a3828; --card2:#1f4030;
+  --border:rgba(45,212,138,0.15); --border2:rgba(45,212,138,0.3);
+  --text1:#f0fdf7; --text2:#a7f3d0; --text3:#6ee7b7; --muted:rgba(167,243,208,0.5);
+  --red:#f87171; --amber:#fbbf24; --blue:#60a5fa;
+  --font:'Cairo',sans-serif; --r:10px; --rl:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:var(--bg);color:var(--text1);min-height:100vh;}
-::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--blue3);border-radius:2px;}
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:var(--bg);} ::-webkit-scrollbar-thumb{background:var(--g3);border-radius:2px;}
 
-/* AUTH */
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
-  background:radial-gradient(ellipse at 30% 40%,rgba(37,99,235,0.15) 0%,transparent 60%),
-             radial-gradient(ellipse at 80% 80%,rgba(30,58,138,0.1) 0%,transparent 50%),var(--bg);}
-.auth-wrap::before{content:'';position:absolute;inset:0;
-  background-image:repeating-linear-gradient(0deg,transparent,transparent 50px,rgba(59,130,246,0.03) 50px,rgba(59,130,246,0.03) 51px),
-                   repeating-linear-gradient(90deg,transparent,transparent 50px,rgba(59,130,246,0.03) 50px,rgba(59,130,246,0.03) 51px);
-  pointer-events:none;}
-.auth-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rxl);padding:40px;width:100%;max-width:440px;
-  box-shadow:0 8px 40px rgba(0,0,0,0.5),inset 0 1px 0 rgba(59,130,246,0.1);animation:fadeUp 0.4s ease;position:relative;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
-.auth-logo{text-align:center;margin-bottom:28px;}
-.logo-mark{width:60px;height:60px;border-radius:16px;background:linear-gradient(135deg,var(--blue3),var(--blue));
-  display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;
-  box-shadow:0 4px 20px rgba(59,130,246,0.4);margin-bottom:10px;}
-.auth-logo h1{font-size:20px;font-weight:700;}
-.auth-logo p{font-size:12px;color:var(--text3);margin-top:2px;}
-.form-group{margin-bottom:14px;}
-.form-group label{font-size:11px;font-weight:600;color:var(--blue-l);display:block;margin-bottom:5px;letter-spacing:0.3px;}
-.inp{width:100%;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
-  color:var(--text1);font-family:var(--font);font-size:13px;outline:none;transition:all 0.2s;}
-.inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+/* ── AUTH ── */
+.auth-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(ellipse at 25% 40%,rgba(15,74,50,.5) 0%,transparent 60%),var(--bg);}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;
+  width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.5);animation:up .4s ease;}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.logo{text-align:center;margin-bottom:26px;}
+.logo-ic{width:58px;height:58px;border-radius:14px;background:linear-gradient(135deg,var(--g2),var(--g3));
+  display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;
+  color:white;box-shadow:0 4px 18px rgba(34,160,107,.4);margin-bottom:8px;}
+.logo h1{font-size:18px;font-weight:700;} .logo p{font-size:11px;color:var(--muted);}
+.lbl{font-size:11px;font-weight:600;color:var(--text3);display:block;margin-bottom:5px;}
+.inp{width:100%;padding:10px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text1);font-family:var(--font);font-size:13px;outline:none;transition:border .2s;}
+.inp:focus{border-color:var(--g4);}
 .inp::placeholder{color:var(--muted);}
-.btn{width:100%;padding:12px;border:none;border-radius:var(--r);font-family:var(--font);font-size:14px;
-  font-weight:600;cursor:pointer;transition:all 0.2s;}
-.btn-blue{background:linear-gradient(135deg,var(--blue3),var(--blue));color:white;}
-.btn-blue:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.4);}
-.btn-blue:disabled{opacity:0.6;transform:none;cursor:not-allowed;}
-.btn-ghost{background:var(--bg2);border:1px solid var(--border2);color:var(--text2);}
-.btn-ghost:hover{background:var(--card2);}
-.btn-sm{width:auto;padding:7px 14px;font-size:12px;}
-.btn-danger{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:var(--red);}
-.btn-danger:hover{background:rgba(239,68,68,0.25);}
-.btn-green{background:linear-gradient(135deg,#15803d,var(--green));color:white;}
-.btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(34,197,94,0.3);}
-.btn-amber{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--amber);}
+select.inp option{background:var(--card);}
+.fg{margin-bottom:13px;}
+.btn{width:100%;padding:11px;border:none;border-radius:var(--r);font-family:var(--font);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-g{background:linear-gradient(135deg,var(--g2),var(--g4));color:white;}
+.btn-g:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(34,160,107,.35);}
+.btn-g:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+.btn-o{background:var(--bg2);border:1px solid var(--border2);color:var(--text2);}
+.btn-o:hover{background:var(--card2);}
+.btn-sm{width:auto;padding:6px 13px;font-size:12px;}
+.btn-red{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.25);color:var(--red);}
+.btn-amber{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);color:var(--amber);}
 
-/* LAYOUT */
+/* ── APP SHELL ── */
 #app{display:none;}
-.layout{display:flex;min-height:100vh;}
-.sidebar{width:230px;background:var(--card);border-left:1px solid var(--border);flex-shrink:0;
-  position:fixed;top:0;right:0;bottom:0;z-index:100;display:flex;flex-direction:column;transition:transform 0.3s;}
-.sb-head{padding:18px 14px;border-bottom:1px solid var(--border);}
-.sb-logo{display:flex;align-items:center;gap:10px;}
-.sb-logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--blue3),var(--blue));
-  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;}
-.sb-logo h2{font-size:15px;font-weight:700;}
-.sb-logo p{font-size:10px;color:var(--text3);}
-.sb-doctor{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.sb-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue3),var(--blue));
-  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden;}
-.sb-name{font-size:12px;font-weight:600;}
-.sb-dept{font-size:10px;color:var(--text3);}
-.sb-nav{flex:1;padding:10px 8px;overflow-y:auto;}
-.nav-lbl{font-size:9px;color:var(--muted);padding:0 8px 5px;letter-spacing:0.5px;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;cursor:pointer;
-  font-size:12px;color:var(--text3);border:none;background:none;width:100%;text-align:right;
-  font-family:var(--font);transition:all 0.15s;}
-.nav-item i{font-size:15px;width:16px;text-align:center;flex-shrink:0;}
-.nav-item:hover{background:var(--card2);color:var(--text1);}
-.nav-item.active{background:rgba(59,130,246,0.15);color:var(--blue-l);font-weight:600;}
-.nav-item .nb{margin-right:auto;background:var(--red);color:white;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700;}
-.sb-foot{padding:10px 8px;border-top:1px solid var(--border);}
+.shell{display:flex;min-height:100vh;}
 
-.main{margin-right:230px;flex:1;min-height:100vh;background:var(--bg);}
-.topbar{padding:12px 22px;background:var(--card);border-bottom:1px solid var(--border);
+/* sidebar */
+.sb{width:220px;background:var(--card);border-left:1px solid var(--border);
+  position:fixed;top:0;right:0;bottom:0;z-index:100;display:flex;flex-direction:column;transition:transform .3s;}
+.sb-top{padding:16px 14px;border-bottom:1px solid var(--border);}
+.sb-brand{display:flex;align-items:center;gap:9px;}
+.sb-ic{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--g2),var(--g3));
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;}
+.sb-brand-name{font-size:14px;font-weight:700;} .sb-brand-sub{font-size:10px;color:var(--muted);}
+.sb-user{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
+.sb-av{width:36px;height:36px;border-radius:50%;background:var(--g3);display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.sb-uname{font-size:12px;font-weight:600;} .sb-udept{font-size:10px;color:var(--muted);}
+.sb-nav{flex:1;padding:8px 6px;overflow-y:auto;}
+.ni{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;cursor:pointer;
+  font-size:12px;color:var(--muted);border:none;background:none;width:100%;text-align:right;
+  font-family:var(--font);transition:all .15s;}
+.ni i{font-size:14px;width:15px;text-align:center;flex-shrink:0;}
+.ni:hover{background:var(--card2);color:var(--text2);}
+.ni.on{background:rgba(45,212,138,.12);color:var(--g5);font-weight:600;}
+.sb-foot{padding:8px 6px;border-top:1px solid var(--border);}
+.sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}
+
+/* topbar */
+.main{margin-right:220px;flex:1;}
+.tb{padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.tb-title{font-size:15px;font-weight:700;}
-.tb-right{display:flex;align-items:center;gap:10px;}
-.icon-btn{width:34px;height:34px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:14px;position:relative;}
-.icon-btn .dot{position:absolute;top:6px;left:6px;width:7px;height:7px;border-radius:50%;background:var(--red);}
-.content{padding:20px;}
+.tb-title{font-size:14px;font-weight:700;}
+.tb-r{display:flex;align-items:center;gap:8px;}
+.hbg{display:none;width:32px;height:32px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);
+  align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:13px;}
 
-/* SECTIONS */
-.sec{display:none;}.sec.active{display:block;}
+/* content */
+.pg{display:none;padding:18px;} .pg.on{display:block;}
 
-/* STAT CARDS */
-.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:18px;}
-.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:16px;position:relative;overflow:hidden;}
-.sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
-.sc.sb::after{background:linear-gradient(90deg,var(--blue3),var(--blue));}
-.sc.sg::after{background:linear-gradient(90deg,#15803d,var(--green));}
-.sc.sr::after{background:linear-gradient(90deg,#991b1b,var(--red));}
-.sc.sa::after{background:linear-gradient(90deg,#92400e,var(--amber));}
-.sc .si{font-size:20px;margin-bottom:8px;}
-.sc.sb .si{color:var(--blue-l);}
-.sc.sg .si{color:var(--green-l);}
-.sc.sr .si{color:var(--red-l);}
-.sc.sa .si{color:var(--amber-l);}
-.sc .sv{font-size:26px;font-weight:800;line-height:1;}
-.sc .sl{font-size:11px;color:var(--text3);margin-top:4px;}
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:12px;}
+.card-t{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.card-t i{color:var(--g4);}
 
-/* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:18px;margin-bottom:14px;}
-.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
-.card-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;}
-.card-title i{color:var(--blue);}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+/* stat row */
+.sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:14px;}
+.sc .si{font-size:18px;margin-bottom:6px;}
+.sc .sv{font-size:24px;font-weight:800;line-height:1;} .sc .sl{font-size:10px;color:var(--muted);margin-top:3px;}
+.sc.cg .si,.sc.cg .sv{color:var(--g5);} .sc.cr .si,.sc.cr .sv{color:var(--red);}
+.sc.ca .si,.sc.ca .sv{color:var(--amber);} .sc.cb .si,.sc.cb .sv{color:var(--blue);}
 
-/* BADGES */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;}
-.bg{background:rgba(34,197,94,0.12);color:var(--green-l);border:1px solid rgba(34,197,94,0.25);}
-.br{background:rgba(239,68,68,0.12);color:var(--red-l);border:1px solid rgba(239,68,68,0.25);}
-.ba{background:rgba(245,158,11,0.12);color:var(--amber-l);border:1px solid rgba(245,158,11,0.25);}
-.bb{background:rgba(59,130,246,0.12);color:var(--blue-l);border:1px solid rgba(59,130,246,0.25);}
-
-/* TABLE */
+/* table */
 .tbl{width:100%;border-collapse:collapse;font-size:12px;}
-.tbl th{color:var(--text3);font-weight:500;padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);}
-.tbl td{padding:9px 12px;border-bottom:1px solid rgba(59,130,246,0.06);color:var(--text2);}
-.tbl tr:hover td{background:var(--card2);}
-.tbl tr:last-child td{border-bottom:none;}
+.tbl th{color:var(--muted);font-weight:500;padding:7px 10px;text-align:right;border-bottom:1px solid var(--border);}
+.tbl td{padding:9px 10px;border-bottom:1px solid rgba(45,212,138,.06);color:var(--text2);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;} .tbl tr:hover td{background:var(--card2);}
 
-/* COURSE CARD */
-.course-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;
-  cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
-.course-card::before{content:'';position:absolute;top:0;right:0;width:3px;height:100%;border-radius:0 var(--rl) var(--rl) 0;}
-.course-card:hover{border-color:var(--border2);transform:translateY(-1px);}
-.course-card .cc-name{font-size:14px;font-weight:700;margin-bottom:4px;}
-.course-card .cc-meta{font-size:11px;color:var(--text3);}
-.course-card .cc-stats{display:flex;gap:10px;margin-top:10px;}
-.course-card .cc-stat{font-size:11px;color:var(--text3);}
-.course-card .cc-stat span{font-weight:700;color:var(--text1);}
+/* badge */
+.bd{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+.bd-g{background:rgba(45,212,138,.1);color:var(--g5);border:1px solid rgba(45,212,138,.2);}
+.bd-r{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2);}
+.bd-a{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2);}
+.bd-b{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2);}
 
-/* QR SESSION */
-.session-panel{background:var(--card);border:1px solid var(--border2);border-radius:var(--rxl);padding:0;overflow:hidden;}
-.session-header{background:linear-gradient(135deg,var(--blue3),var(--blue2));padding:18px 20px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-.sh-info h3{font-size:15px;font-weight:700;color:white;}
-.sh-info p{font-size:11px;color:rgba(255,255,255,0.75);}
-.session-body{padding:20px;display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start;}
+/* course pill */
+.cp{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;transition:border .15s;}
+.cp:hover{border-color:var(--border2);}
+.cp-dot{width:3px;height:34px;border-radius:2px;flex-shrink:0;}
+.cp-name{font-size:12px;font-weight:600;} .cp-meta{font-size:10px;color:var(--muted);}
+
+/* session panel */
+.sess-head{background:linear-gradient(135deg,var(--g2),var(--g3));border-radius:var(--rl) var(--rl) 0 0;
+  padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.sess-head h3{font-size:14px;font-weight:700;color:white;}
+.sess-head p{font-size:11px;color:rgba(255,255,255,.7);}
+.sess-body{padding:16px;display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:start;}
 .qr-wrap{text-align:center;}
-.qr-box{background:white;border-radius:var(--rl);padding:16px;display:inline-block;position:relative;}
-.qr-box canvas{display:block;}
-.qr-timer{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);
-  background:var(--blue);color:white;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;white-space:nowrap;}
-.qr-code-text{font-size:11px;color:var(--text3);margin-top:18px;}
-.live-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:livePulse 1.2s infinite;}
-@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.5);}70%{box-shadow:0 0 0 8px rgba(34,197,94,0);}100%{box-shadow:0 0 0 0 rgba(34,197,94,0);}}
-.live-title{font-size:13px;font-weight:700;}
-.live-count{background:rgba(34,197,94,0.15);color:var(--green-l);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;}
-.student-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;}
-.sl-item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg2);border-radius:8px;
-  border:1px solid var(--border);transition:all 0.2s;}
-.sl-item.new-entry{animation:slideIn 0.4s ease;}
-@keyframes slideIn{from{opacity:0;transform:translateX(10px);}to{opacity:1;transform:none;}}
-.sl-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;flex-shrink:0;}
-.sl-name{flex:1;font-size:12px;font-weight:500;}
-.sl-id{font-size:10px;color:var(--text3);}
-.sl-time{font-size:10px;color:var(--text3);}
-.session-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.sf-stats{display:flex;gap:16px;}
-.sf-stat{font-size:11px;color:var(--text3);}
-.sf-stat span{font-weight:700;font-size:14px;color:var(--text1);}
+.qr-box{background:white;border-radius:10px;padding:12px;display:inline-block;position:relative;}
+.qr-tm{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
+  background:var(--g4);color:white;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;white-space:nowrap;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--g5);animation:pulse 1.2s infinite;display:inline-block;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(45,212,138,.5);}70%{box-shadow:0 0 0 7px rgba(45,212,138,0);}100%{box-shadow:0 0 0 0 rgba(45,212,138,0);}}
+.st-row{display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--bg2);
+  border-radius:8px;border:1px solid var(--border);margin-bottom:5px;animation:si .3s ease;}
+@keyframes si{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+.st-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;flex-shrink:0;}
 
-/* PROGRESS */
-.prog-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-top:3px;}
-.prog-fill{height:100%;border-radius:3px;transition:width 0.8s ease;}
-.pf-blue{background:linear-gradient(90deg,var(--blue3),var(--blue));}
-.pf-green{background:linear-gradient(90deg,#15803d,var(--green));}
-.pf-red{background:var(--red);}
-.pf-amber{background:var(--amber);}
+/* schedule */
+.day-col{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;}
+.day-hd{padding:9px 12px;font-size:11px;font-weight:700;color:white;}
+.day-body{padding:8px;}
+.lec-item{padding:8px 10px;background:var(--bg2);border-radius:8px;margin-bottom:5px;
+  border-right:3px solid;cursor:pointer;transition:background .15s;}
+.lec-item:hover{background:var(--card2);}
+.lec-item .ln{font-size:11px;font-weight:600;} .lec-item .lm{font-size:10px;color:var(--muted);margin-top:2px;}
+.code-tag{font-family:monospace;background:var(--bg2);border:1px solid var(--border);
+  border-radius:5px;padding:1px 7px;font-size:10px;color:var(--g5);}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);
-  z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
-.modal-overlay.hidden{display:none;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--rxl);width:100%;max-width:480px;
-  padding:26px;animation:fadeUp 0.3s ease;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
-.modal-title{font-size:16px;font-weight:700;margin-bottom:4px;}
-.modal-sub{font-size:12px;color:var(--text3);margin-bottom:18px;}
-.modal-footer{display:flex;gap:8px;margin-top:18px;}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);
+  z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.ov.h{display:none;}
+.mo{background:var(--card);border:1px solid var(--border);border-radius:18px;width:100%;max-width:440px;
+  padding:22px;animation:up .3s ease;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+.mo-t{font-size:15px;font-weight:700;margin-bottom:3px;}
+.mo-s{font-size:11px;color:var(--muted);margin-bottom:16px;}
+.mo-f{display:flex;gap:7px;margin-top:16px;}
 
-/* TOAST */
-.toast{position:fixed;bottom:22px;left:22px;z-index:9999;background:var(--card);border:1px solid var(--border);
-  border-radius:10px;padding:12px 18px;font-size:12px;max-width:280px;display:flex;align-items:center;gap:8px;
-  transform:translateY(16px);opacity:0;transition:all 0.3s;box-shadow:0 4px 20px rgba(0,0,0,0.5);}
+/* toast */
+.toast{position:fixed;bottom:20px;left:20px;z-index:9999;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;
+  display:flex;align-items:center;gap:7px;transform:translateY(14px);opacity:0;transition:all .3s;
+  box-shadow:0 4px 18px rgba(0,0,0,.5);max-width:260px;}
 .toast.show{transform:none;opacity:1;}
-.toast-success{border-color:rgba(34,197,94,0.3);color:var(--green-l);}
-.toast-error{border-color:rgba(239,68,68,0.3);color:var(--red-l);}
-.toast-info{border-color:rgba(59,130,246,0.3);color:var(--blue-l);}
+.toast.tg{border-color:rgba(45,212,138,.3);color:var(--g5);}
+.toast.tr{border-color:rgba(248,113,113,.3);color:var(--red);}
+.toast.ti{border-color:rgba(96,165,250,.3);color:var(--blue);}
 
-/* LOADER */
-.loader{display:flex;align-items:center;justify-content:center;padding:32px;}
-.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+.spin{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--g4);
+  border-radius:50%;animation:sp .8s linear infinite;margin:20px auto;display:block;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.h{display:none!important;}
+.g2c{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-/* HAMBURGER */
-.hamburger{display:none;width:34px;height:34px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);
-  align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px;}
-.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;}
-
-@media(max-width:900px){.two-col{grid-template-columns:1fr;}.session-body{grid-template-columns:1fr;}}
-@media(max-width:768px){
-  .sidebar{transform:translateX(100%);}.sidebar.open{transform:none;}
-  .sb-overlay.visible{display:block;}.main{margin-right:0;}.hamburger{display:flex;}
-  .stat-row{grid-template-columns:repeat(2,1fr);}.content{padding:14px;}
-  .three-col{grid-template-columns:1fr 1fr;}
+@media(max-width:750px){
+  .sb{transform:translateX(100%);}  .sb.open{transform:none;}
+  .sb-ov.vis{display:block;}  .main{margin-right:0;}  .hbg{display:flex;}
+  .sess-body{grid-template-columns:1fr;}  .g2c{grid-template-columns:1fr;}
 }
-
-.sched-tab{padding:7px 16px;border-radius:8px;border:none;background:none;color:var(--text3);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;}
-.sched-tab.active{background:var(--blue);color:white;}
-.day-cell{min-height:80px;border:1px solid var(--border);border-radius:8px;padding:6px;cursor:pointer;transition:background 0.15s;}
-.day-cell:hover{background:var(--card2);}
-.day-cell.today{border-color:var(--blue);background:rgba(59,130,246,0.08);}
-.day-cell.has-lecture{border-color:rgba(34,197,94,0.3);}
-.lec-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);display:inline-block;margin:1px;}
-.lec-dot.active{background:var(--green);}
-.time-slot{display:flex;gap:10px;align-items:stretch;margin-bottom:8px;}
-.time-label{font-size:10px;color:var(--text3);width:44px;flex-shrink:0;padding-top:2px;text-align:left;}
-.lec-block{flex:1;padding:10px 12px;border-radius:8px;border-right:3px solid;background:var(--bg2);}
-.lec-block-name{font-size:12px;font-weight:600;}
-.lec-block-meta{font-size:10px;color:var(--text3);margin-top:2px;}
-.code-pill{font-family:monospace;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:10px;color:var(--blue-l);letter-spacing:0.5px;}
-
-.hidden{display:none!important;}
-.divider{height:1px;background:var(--border);margin:14px 0;}
 </style>
 </head>
 <body>
 
 <!-- AUTH -->
-<div id="auth-section">
-<div class="auth-wrap">
-<div class="auth-card">
-  <div class="auth-logo">
-    <div class="logo-mark">ر</div>
+<div id="auth-wrap">
+<div class="auth-bg">
+<div class="auth-box">
+  <div class="logo">
+    <div class="logo-ic">ر</div>
     <h1>نظام رصد</h1>
     <p>بوابة الدكتور / المحاضر</p>
   </div>
-  <div class="form-group">
-    <label><i class="fas fa-id-badge"></i> البريد الإلكتروني أو الرقم الوظيفي</label>
-    <input id="l-email" type="text" class="inp" placeholder="doctor@university.edu">
-  </div>
-  <div class="form-group">
-    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-    <input id="l-pass" type="password" class="inp" placeholder="••••••••">
-  </div>
-  <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-    <label style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer">
-      <input type="checkbox" id="remember-me"> تذكّرني
-    </label>
-    <a href="#" style="font-size:11px;color:var(--blue-l);text-decoration:none">نسيت كلمة المرور؟</a>
-  </div>
-  <button class="btn btn-blue" id="login-btn" onclick="doLogin()">
-    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+  <div class="fg"><label class="lbl">البريد الإلكتروني</label>
+    <input id="l-em" type="email" class="inp" placeholder="doctor@university.edu"></div>
+  <div class="fg"><label class="lbl">كلمة المرور</label>
+    <input id="l-pw" type="password" class="inp" placeholder="••••••••"></div>
+  <button class="btn btn-g" id="l-btn" onclick="doLogin()">
+    <i class="fas fa-sign-in-alt"></i> دخول
   </button>
-  <div style="margin-top:16px;padding:12px;background:var(--bg2);border-radius:var(--r);border:1px solid var(--border)">
-    <p style="font-size:11px;color:var(--text3);text-align:center">
-      <i class="fas fa-info-circle" style="color:var(--blue-l)"></i>
-      للتسجيل كدكتور جديد، تواصل مع إدارة الجامعة
-    </p>
+  <div style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:var(--r);border:1px solid var(--border);text-align:center">
+    <p style="font-size:11px;color:var(--muted)"><i class="fas fa-info-circle" style="color:var(--g5)"></i> للتسجيل تواصل مع إدارة الجامعة</p>
   </div>
 </div>
 </div>
@@ -290,1367 +210,766 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);min-height:
 
 <!-- APP -->
 <div id="app">
-<div class="sb-overlay" id="sb-overlay" onclick="closeSb()"></div>
-<div class="layout">
+<div class="sb-ov" id="sb-ov" onclick="closeSb()"></div>
+<div class="shell">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sb-head">
-      <div class="sb-logo">
-        <div class="sb-logo-icon">ر</div>
-        <div><div style="font-size:14px;font-weight:700">رصد</div><div style="font-size:10px;color:var(--text3)">لوحة الدكتور</div></div>
+  <aside class="sb" id="sb">
+    <div class="sb-top">
+      <div class="sb-brand">
+        <div class="sb-ic">ر</div>
+        <div><div class="sb-brand-name">رصد</div><div class="sb-brand-sub">لوحة الدكتور</div></div>
       </div>
     </div>
-    <div class="sb-doctor">
-      <div class="sb-avatar" id="sb-avatar">د</div>
-      <div><div class="sb-name" id="sb-name">الدكتور</div><div class="sb-dept" id="sb-dept">--</div></div>
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av">د</div>
+      <div><div class="sb-uname" id="sb-nm">الدكتور</div><div class="sb-udept" id="sb-dp">--</div></div>
     </div>
     <nav class="sb-nav">
-      <div class="nav-lbl">الرئيسية</div>
-      <button class="nav-item active" onclick="showSec('home')"><i class="fas fa-home"></i> لوحة التحكم</button>
-      <button class="nav-item" onclick="showSec('courses')"><i class="fas fa-book-open"></i> موادي الدراسية</button>
-      <button class="nav-item" onclick="showSec('schedule')"><i class="fas fa-calendar-alt"></i> جدول المحاضرات</button>
-      <button class="nav-item" onclick="showSec('session')"><i class="fas fa-broadcast-tower"></i> جلسة الحضور <span class="nb" id="active-session-badge" style="display:none">مفتوحة</span></button>
-      <div class="nav-lbl" style="margin-top:8px">التقارير</div>
-      <button class="nav-item" onclick="showSec('reports')"><i class="fas fa-chart-bar"></i> تقارير الحضور</button>
-      <button class="nav-item" onclick="showSec('students')"><i class="fas fa-users"></i> قوائم الطلاب</button>
-      <div class="nav-lbl" style="margin-top:8px">الحساب</div>
-      <button class="nav-item" onclick="showSec('profile')"><i class="fas fa-user-circle"></i> ملفي الشخصي</button>
-      <button class="nav-item" onclick="showSec('notifications')"><i class="fas fa-bell"></i> الإشعارات <span class="nb" id="notif-nb">0</span></button>
+      <button class="ni on" onclick="go('home')"><i class="fas fa-home"></i> الرئيسية</button>
+      <button class="ni" onclick="go('courses')"><i class="fas fa-book-open"></i> موادي</button>
+      <button class="ni" onclick="go('schedule')"><i class="fas fa-calendar-alt"></i> الجدول</button>
+      <button class="ni" onclick="go('session')"><i class="fas fa-broadcast-tower"></i> جلسة الحضور <span id="sess-badge" style="display:none;background:var(--red);color:white;font-size:9px;padding:1px 5px;border-radius:8px;margin-right:auto">مفتوحة</span></button>
+      <button class="ni" onclick="go('reports')"><i class="fas fa-chart-bar"></i> التقارير</button>
     </nav>
     <div class="sb-foot">
-      <button class="nav-item" onclick="doLogout()" style="color:var(--red-l)"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+      <button class="ni" onclick="go('profile')"><i class="fas fa-user-circle"></i> حسابي</button>
+      <button class="ni" onclick="doLogout()" style="color:var(--red)"><i class="fas fa-sign-out-alt"></i> خروج</button>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
-    <div class="topbar">
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="hamburger" onclick="openSb()"><i class="fas fa-bars"></i></button>
-        <div class="tb-title" id="tb-title">لوحة التحكم</div>
+    <div class="tb">
+      <div style="display:flex;align-items:center;gap:9px">
+        <button class="hbg" onclick="openSb()"><i class="fas fa-bars"></i></button>
+        <div class="tb-title" id="tb-t">الرئيسية</div>
       </div>
-      <div class="tb-right">
-        <div class="icon-btn" onclick="showSec('notifications')"><i class="fas fa-bell"></i><div class="dot" id="notif-dot"></div></div>
-        <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;cursor:pointer" onclick="showSec('profile')">
-          <div class="sb-avatar" style="width:28px;height:28px;font-size:11px" id="tb-avatar">د</div>
-          <span style="font-size:12px;font-weight:500" id="tb-name">الدكتور</span>
+      <div class="tb-r">
+        <div style="font-size:11px;color:var(--muted)" id="tb-date"></div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="pg on" id="pg-home">
+      <div style="margin-bottom:14px">
+        <h2 style="font-size:17px;font-weight:800" id="greet">مرحباً!</h2>
+      </div>
+      <div class="sr">
+        <div class="sc cg"><div class="si"><i class="fas fa-book"></i></div><div class="sv" id="h-courses">0</div><div class="sl">موادي</div></div>
+        <div class="sc cb"><div class="si"><i class="fas fa-users"></i></div><div class="sv" id="h-students">0</div><div class="sl">الطلاب</div></div>
+        <div class="sc ca"><div class="si"><i class="fas fa-chalkboard-teacher"></i></div><div class="sv" id="h-lecs">0</div><div class="sl">المحاضرات</div></div>
+        <div class="sc cr"><div class="si"><i class="fas fa-percentage"></i></div><div class="sv" id="h-avg">--%</div><div class="sl">متوسط الحضور</div></div>
+      </div>
+      <div class="g2c">
+        <div class="card">
+          <div class="card-t"><i class="fas fa-calendar-day"></i> اليوم</div>
+          <div id="h-today"></div>
+        </div>
+        <div class="card">
+          <div class="card-t"><i class="fas fa-history"></i> آخر الجلسات</div>
+          <div id="h-recent"></div>
         </div>
       </div>
     </div>
 
-    <div class="content">
-
-      <!-- HOME -->
-      <div class="sec active" id="sec-home">
-        <div style="margin-bottom:18px">
-          <h2 style="font-size:19px;font-weight:800" id="home-greeting">مرحباً، الدكتور!</h2>
-          <p style="font-size:12px;color:var(--text3)" id="home-date"></p>
-        </div>
-        <div class="stat-row">
-          <div class="sc sb"><div class="si"><i class="fas fa-book"></i></div><div class="sv" id="st-courses">0</div><div class="sl">موادي الدراسية</div></div>
-          <div class="sc sg"><div class="si"><i class="fas fa-users"></i></div><div class="sv" id="st-students">0</div><div class="sl">إجمالي الطلاب</div></div>
-          <div class="sc sa"><div class="si"><i class="fas fa-chalkboard-teacher"></i></div><div class="sv" id="st-lectures">0</div><div class="sl">محاضرات هذا الفصل</div></div>
-          <div class="sc sr"><div class="si"><i class="fas fa-percentage"></i></div><div class="sv" id="st-avg">--%</div><div class="sl">متوسط الحضور</div></div>
-        </div>
-        <div class="two-col">
-          <div class="card">
-            <div class="card-head">
-              <div class="card-title"><i class="fas fa-book-open"></i> موادي اليوم</div>
-              <button class="btn btn-blue btn-sm" onclick="showSec('session')"><i class="fas fa-plus"></i> فتح جلسة</button>
-            </div>
-            <div id="today-courses"><div class="loader"><div class="spin"></div></div></div>
-          </div>
-          <div class="card">
-            <div class="card-title"><i class="fas fa-chart-pie"></i> نسب الحضور</div>
-            <div id="home-att-chart"><div class="loader"><div class="spin"></div></div></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="fas fa-history"></i> آخر الجلسات</div>
-          <div id="recent-sessions"><div class="loader"><div class="spin"></div></div></div>
-        </div>
+    <!-- COURSES -->
+    <div class="pg h" id="pg-courses">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <h2 style="font-size:16px;font-weight:700">موادي الدراسية</h2>
+        <button class="btn btn-g btn-sm" onclick="openAddCourseModal()"><i class="fas fa-plus"></i> إضافة مادة</button>
       </div>
-
-      <!-- COURSES -->
-      <div class="sec hidden" id="sec-courses">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-          <h2 style="font-size:17px;font-weight:700">موادي الدراسية</h2>
-          <button class="btn btn-ghost btn-sm" onclick="loadCourses()"><i class="fas fa-sync"></i> تحديث</button>
-        </div>
-        <div id="courses-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
-          <div class="loader"><div class="spin"></div></div>
-        </div>
-      </div>
-
-      <!-- SCHEDULE -->
-      <div class="sec hidden" id="sec-schedule">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-          <h2 style="font-size:17px;font-weight:700">جدول المحاضرات</h2>
-          <button class="btn btn-blue btn-sm" onclick="openAddLectureModal()"><i class="fas fa-plus"></i> إضافة محاضرة</button>
-        </div>
-
-        <!-- View Tabs -->
-        <div style="display:flex;gap:4px;background:var(--bg2);border-radius:10px;padding:4px;margin-bottom:16px;width:fit-content">
-          <button class="sched-tab active" id="tab-weekly" onclick="switchSchedTab('weekly')">أسبوعي</button>
-          <button class="sched-tab" id="tab-monthly" onclick="switchSchedTab('monthly')">شهري</button>
-          <button class="sched-tab" id="tab-daily" onclick="switchSchedTab('daily')">يومي</button>
-        </div>
-
-        <!-- Weekly View -->
-        <div id="view-weekly">
-          <div id="weekly-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
-        </div>
-
-        <!-- Monthly View -->
-        <div id="view-monthly" class="hidden">
-          <div class="card">
-            <div class="card-head">
-              <div style="display:flex;align-items:center;gap:10px">
-                <button onclick="changeMonth(-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8250;</button>
-                <div class="card-title" id="month-label" style="margin:0">الشهر</div>
-                <button onclick="changeMonth(1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8249;</button>
-              </div>
-            </div>
-            <div id="monthly-calendar"></div>
-          </div>
-        </div>
-
-        <!-- Daily View -->
-        <div id="view-daily" class="hidden">
-          <div class="card">
-            <div class="card-head">
-              <div style="display:flex;align-items:center;gap:10px">
-                <button onclick="changeDay(-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8250;</button>
-                <div class="card-title" id="day-label" style="margin:0">اليوم</div>
-                <button onclick="changeDay(1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--text2);cursor:pointer;font-size:14px">&#8249;</button>
-              </div>
-            </div>
-            <div id="daily-schedule"></div>
-          </div>
-        </div>
-
-        <!-- All Lectures Table -->
-        <div class="card" style="margin-top:14px">
-          <div class="card-head">
-            <div class="card-title"><i class="fas fa-list"></i> جميع المحاضرات المجدولة</div>
-            <button class="btn btn-ghost btn-sm" onclick="loadSchedule()"><i class="fas fa-sync"></i></button>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="tbl">
-              <thead><tr><th>المادة</th><th>اليوم</th><th>الوقت</th><th>القاعة</th><th>الشعبة</th><th>رقم المحاضرة</th><th>الكود</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-              <tbody id="schedule-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- SESSION -->
-      <div class="sec hidden" id="sec-session">
-        <div style="margin-bottom:16px">
-          <h2 style="font-size:17px;font-weight:700">إدارة جلسة الحضور</h2>
-          <p style="font-size:12px;color:var(--text3);margin-top:2px">افتح جلسة محاضرة وتابع الحضور بشكل مباشر</p>
-        </div>
-
-        <!-- No active session -->
-        <div id="no-session-panel">
-          <div class="card" style="text-align:center;padding:32px">
-            <div style="font-size:48px;margin-bottom:14px;opacity:0.4"><i class="fas fa-broadcast-tower"></i></div>
-            <h3 style="font-size:15px;font-weight:700;margin-bottom:6px">لا توجد جلسة مفتوحة</h3>
-            <p style="font-size:12px;color:var(--text3);margin-bottom:18px">اختر المادة وافتح جلسة الحضور لطلابك</p>
-            <button class="btn btn-blue" style="max-width:220px;margin:0 auto" onclick="openNewSessionModal()">
-              <i class="fas fa-play-circle"></i> فتح جلسة جديدة
-            </button>
-          </div>
-        </div>
-
-        <!-- Active session -->
-        <div id="active-session-panel" class="hidden">
-          <div class="session-panel">
-            <div class="session-header">
-              <div class="sh-info">
-                <h3 id="sess-course-name">اسم المادة</h3>
-                <p id="sess-meta">شعبة -- · قاعة -- · المحاضرة --</p>
-              </div>
-              <div style="display:flex;gap:8px;align-items:center">
-                <div style="background:rgba(255,255,255,0.15);padding:5px 12px;border-radius:20px;font-size:12px;color:white;display:flex;align-items:center;gap:6px">
-                  <div class="live-dot" style="background:white"></div>
-                  مباشر
-                </div>
-                <button class="btn btn-danger btn-sm" onclick="closeSession()"><i class="fas fa-stop-circle"></i> إنهاء الجلسة</button>
-              </div>
-            </div>
-            <div class="session-body">
-              <div class="qr-wrap">
-                <div class="qr-box">
-                  <canvas id="qr-canvas"></canvas>
-                  <div class="qr-timer" id="qr-countdown">🔄 15s</div>
-                </div>
-                <p class="qr-code-text" id="qr-session-code">كود الجلسة: --</p>
-                <p style="font-size:10px;color:var(--text3);margin-top:4px"><i class="fas fa-map-marker-alt"></i> GPS نشط · <span id="gps-coords">جارٍ التحديد...</span></p>
-                <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap">
-                  <button class="btn btn-ghost btn-sm" onclick="refreshQR()"><i class="fas fa-sync"></i> تجديد QR</button>
-                  <button class="btn btn-amber btn-sm" onclick="openManualAttModal()"><i class="fas fa-user-plus"></i> إضافة يدوي</button>
-                </div>
-              </div>
-              <div>
-                <div class="live-header">
-                  <div class="live-dot"></div>
-                  <div class="live-title">الطلاب الحاضرون</div>
-                  <div class="live-count" id="present-count">0</div>
-                </div>
-                <div class="student-list" id="live-student-list">
-                  <div style="text-align:center;color:var(--text3);font-size:12px;padding:20px">في انتظار تسجيل الطلاب...</div>
-                </div>
-              </div>
-            </div>
-            <div class="session-footer">
-              <div class="sf-stats">
-                <div class="sf-stat">حاضر: <span id="sf-present">0</span></div>
-                <div class="sf-stat">غائب: <span id="sf-absent">0</span></div>
-                <div class="sf-stat">المجموع: <span id="sf-total">0</span></div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button class="btn btn-ghost btn-sm" onclick="exportSessionReport()"><i class="fas fa-file-export"></i> تصدير</button>
-                <button class="btn btn-danger btn-sm" onclick="closeSession()"><i class="fas fa-stop"></i> إنهاء</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- REPORTS -->
-      <div class="sec hidden" id="sec-reports">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-          <h2 style="font-size:17px;font-weight:700">تقارير الحضور</h2>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="exportReports()"><i class="fas fa-file-pdf"></i> PDF</button>
-            <button class="btn btn-blue btn-sm" onclick="exportReports('excel')"><i class="fas fa-file-excel"></i> Excel</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-head">
-            <div class="card-title"><i class="fas fa-filter"></i> تصفية التقارير</div>
-          </div>
-          <div class="three-col" style="margin-bottom:10px">
-            <div>
-              <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">المادة</label>
-              <select class="inp" id="filter-course" onchange="loadReports()">
-                <option value="">جميع المواد</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">الفترة</label>
-              <select class="inp" id="filter-period" onchange="loadReports()">
-                <option value="all">كل الفترات</option>
-                <option value="week">هذا الأسبوع</option>
-                <option value="month">هذا الشهر</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">الحالة</label>
-              <select class="inp" id="filter-status" onchange="loadReports()">
-                <option value="">الكل</option>
-                <option value="present">حاضر</option>
-                <option value="absent">غائب</option>
-                <option value="late">متأخر</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="fas fa-list"></i> سجلات الحضور التفصيلية</div>
-          <div style="overflow-x:auto">
-            <table class="tbl">
-              <thead><tr><th>الطالب</th><th>الرقم الجامعي</th><th>المادة</th><th>المحاضرة</th><th>التاريخ</th><th>الحالة</th><th>الوقت</th></tr></thead>
-              <tbody id="reports-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3)"><div class="spin" style="margin:0 auto"></div></td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- STUDENTS -->
-      <div class="sec hidden" id="sec-students">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-          <h2 style="font-size:17px;font-weight:700">قوائم الطلاب</h2>
-        </div>
-        <div class="card">
-          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-            <input class="inp" style="flex:1;min-width:180px" id="student-search" placeholder="ابحث باسم الطالب أو رقمه..." oninput="filterStudents()">
-            <select class="inp" style="width:160px" id="student-course-filter" onchange="filterStudents()">
-              <option value="">كل المواد</option>
-            </select>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="tbl">
-              <thead><tr><th>الطالب</th><th>الرقم الجامعي</th><th>الكلية</th><th>الشعبة</th><th>الحضور</th><th>الغياب</th><th>النسبة</th><th>الإجراءات</th></tr></thead>
-              <tbody id="students-tbody"><tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text3)"><div class="spin" style="margin:0 auto"></div></td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- PROFILE -->
-      <div class="sec hidden" id="sec-profile">
-        <h2 style="font-size:17px;font-weight:700;margin-bottom:16px">ملفي الشخصي</h2>
-        <div class="card" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
-          <div class="sb-avatar" style="width:72px;height:72px;font-size:24px;font-weight:700;border:3px solid var(--border2)" id="p-avatar">د</div>
-          <div>
-            <h3 style="font-size:17px;font-weight:700" id="p-name">الدكتور</h3>
-            <p style="font-size:12px;color:var(--text3)" id="p-dept">--</p>
-            <div style="display:flex;gap:6px;margin-top:6px">
-              <span class="badge bb"><i class="fas fa-circle" style="font-size:6px"></i> دكتور / محاضر</span>
-              <span class="badge bg">حساب نشط</span>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="fas fa-info-circle"></i> معلومات الحساب</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px" id="p-info-grid"></div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="fas fa-key"></i> تغيير كلمة المرور</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:480px">
-            <div><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">كلمة المرور الجديدة</label>
-            <input type="password" class="inp" id="new-pass" placeholder="••••••••"></div>
-            <div><label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">تأكيد كلمة المرور</label>
-            <input type="password" class="inp" id="new-pass2" placeholder="••••••••"></div>
-          </div>
-          <button class="btn btn-blue btn-sm" style="margin-top:10px" onclick="changePassword()"><i class="fas fa-save"></i> حفظ كلمة المرور</button>
-        </div>
-      </div>
-
-      <!-- NOTIFICATIONS -->
-      <div class="sec hidden" id="sec-notifications">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <h2 style="font-size:17px;font-weight:700">الإشعارات</h2>
-          <button class="btn btn-ghost btn-sm" onclick="markAllRead()">تعليم الكل كمقروء</button>
-        </div>
-        <div class="card" style="padding:0;overflow:hidden" id="notif-list">
-          <div class="loader"><div class="spin"></div></div>
-        </div>
-      </div>
-
+      <div id="courses-list"></div>
     </div>
+
+    <!-- SCHEDULE -->
+    <div class="pg h" id="pg-schedule">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <h2 style="font-size:16px;font-weight:700">جدول المحاضرات</h2>
+        <button class="btn btn-g btn-sm" onclick="openAddLecModal()"><i class="fas fa-plus"></i> إضافة محاضرة</button>
+      </div>
+      <!-- Day tabs -->
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px" id="day-tabs"></div>
+      <div id="sched-view"></div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-t"><i class="fas fa-list"></i> كل المحاضرات</div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>المادة</th><th>اليوم</th><th>الوقت</th><th>القاعة</th><th>رقم</th><th>الكود</th><th>الحالة</th><th></th></tr></thead>
+            <tbody id="lec-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSION -->
+    <div class="pg h" id="pg-session">
+      <div style="margin-bottom:14px">
+        <h2 style="font-size:16px;font-weight:700">جلسة الحضور</h2>
+      </div>
+      <div id="no-sess" class="card" style="text-align:center;padding:28px">
+        <div style="font-size:40px;opacity:.3;margin-bottom:10px"><i class="fas fa-broadcast-tower"></i></div>
+        <p style="font-size:13px;font-weight:600;margin-bottom:5px">لا توجد جلسة مفتوحة</p>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:16px">اختر مادة وافتح جلسة لتبدأ الحضور</p>
+        <button class="btn btn-g" style="max-width:200px;margin:0 auto" onclick="openStartSessModal()"><i class="fas fa-play"></i> فتح جلسة</button>
+      </div>
+      <div id="act-sess" class="h">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden">
+          <div class="sess-head">
+            <div><h3 id="sess-cname">--</h3><p id="sess-meta">--</p></div>
+            <div style="display:flex;gap:7px;align-items:center">
+              <span style="background:rgba(255,255,255,.15);color:white;padding:4px 10px;border-radius:20px;font-size:11px;display:flex;align-items:center;gap:5px"><div class="live-dot" style="background:white"></div>مباشر</span>
+              <button class="btn btn-sm btn-red" onclick="closeSession()"><i class="fas fa-stop"></i> إنهاء</button>
+            </div>
+          </div>
+          <div class="sess-body">
+            <div class="qr-wrap">
+              <div class="qr-box">
+                <canvas id="qr-cv"></canvas>
+                <div class="qr-tm" id="qr-tm">🔄 15s</div>
+              </div>
+              <p style="font-size:10px;color:var(--muted);margin-top:14px" id="sess-code">--</p>
+              <p style="font-size:10px;color:var(--muted);margin-top:3px" id="gps-txt"><i class="fas fa-map-marker-alt"></i> --</p>
+              <div style="display:flex;gap:5px;justify-content:center;margin-top:8px;flex-wrap:wrap">
+                <button class="btn btn-o btn-sm" onclick="refreshQR()"><i class="fas fa-sync"></i> تجديد</button>
+                <button class="btn btn-amber btn-sm" onclick="openManualModal()"><i class="fas fa-user-plus"></i> يدوي</button>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px">
+                <div class="live-dot"></div>
+                <span style="font-size:12px;font-weight:700">الحاضرون</span>
+                <span style="background:rgba(45,212,138,.15);color:var(--g5);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700" id="pres-cnt">0</span>
+                <span style="font-size:11px;color:var(--muted)">غائب: <span id="abs-cnt">0</span></span>
+              </div>
+              <div id="live-list" style="max-height:300px;overflow-y:auto">
+                <p style="text-align:center;color:var(--muted);font-size:11px;padding:16px">في انتظار الطلاب...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="pg h" id="pg-reports">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <h2 style="font-size:16px;font-weight:700">تقارير الحضور</h2>
+        <button class="btn btn-o btn-sm" onclick="toast('سيتم التصدير قريباً','ti')"><i class="fas fa-file-export"></i> تصدير</button>
+      </div>
+      <div class="g2c" style="margin-bottom:12px">
+        <div class="fg"><label class="lbl">المادة</label>
+          <select class="inp" id="f-course" onchange="loadReports()"><option value="">الكل</option></select></div>
+        <div class="fg"><label class="lbl">الحالة</label>
+          <select class="inp" id="f-status" onchange="loadReports()">
+            <option value="">الكل</option><option value="present">حاضر</option>
+            <option value="absent">غائب</option><option value="late">متأخر</option>
+          </select></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>الطالب</th><th>الرقم</th><th>المادة</th><th>المحاضرة</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+            <tbody id="rep-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="pg h" id="pg-profile">
+      <h2 style="font-size:16px;font-weight:700;margin-bottom:14px">حسابي</h2>
+      <div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div class="sb-av" style="width:60px;height:60px;font-size:22px;font-weight:700;border:2px solid var(--border2)" id="p-av">د</div>
+        <div>
+          <h3 style="font-size:15px;font-weight:700" id="p-nm">--</h3>
+          <p style="font-size:11px;color:var(--muted)" id="p-dp">--</p>
+          <span class="bd bd-g" style="margin-top:5px;display:inline-flex">دكتور / محاضر</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-t"><i class="fas fa-key"></i> تغيير كلمة المرور</div>
+        <div class="g2c">
+          <div class="fg"><label class="lbl">كلمة المرور الجديدة</label><input type="password" class="inp" id="np1" placeholder="••••••••"></div>
+          <div class="fg"><label class="lbl">تأكيد كلمة المرور</label><input type="password" class="inp" id="np2" placeholder="••••••••"></div>
+        </div>
+        <button class="btn btn-g btn-sm" onclick="changePass()"><i class="fas fa-save"></i> حفظ</button>
+      </div>
+    </div>
+
   </main>
 </div>
 </div>
 
+<!-- ADD COURSE MODAL -->
+<div class="ov h" id="add-course-ov">
+<div class="mo">
+  <div class="mo-t"><i class="fas fa-book" style="color:var(--g5)"></i> إضافة مادة دراسية</div>
+  <div class="mo-s">أضف مادة جديدة إلى قائمة موادك</div>
+  <div class="fg"><label class="lbl">اسم المادة</label><input class="inp" id="c-name" placeholder="مثال: رياضيات 2"></div>
+  <div class="g2c">
+    <div class="fg"><label class="lbl">الكلية</label><input class="inp" id="c-fac" placeholder="كلية الهندسة"></div>
+    <div class="fg"><label class="lbl">القسم</label><input class="inp" id="c-dept" placeholder="قسم الحاسوب"></div>
+  </div>
+  <div class="g2c">
+    <div class="fg"><label class="lbl">الشعبة</label>
+      <select class="inp" id="c-sec"><option>أ</option><option>ب</option><option>ج</option><option>د</option></select></div>
+    <div class="fg"><label class="lbl">عدد الطلاب التقديري</label><input type="number" class="inp" id="c-count" placeholder="40"></div>
+  </div>
+  <div class="mo-f">
+    <button class="btn btn-o" onclick="closeOv('add-course-ov')">إلغاء</button>
+    <button class="btn btn-g" onclick="saveCourse()" style="flex:1"><i class="fas fa-save"></i> حفظ المادة</button>
+  </div>
+</div>
+</div>
 
 <!-- ADD LECTURE MODAL -->
-<div class="modal-overlay hidden" id="add-lec-modal">
-<div class="modal">
-  <div class="modal-title"><i class="fas fa-plus-circle" style="color:var(--blue)"></i> إضافة محاضرة جديدة</div>
-  <div class="modal-sub">حدد تفاصيل المحاضرة لإضافتها إلى الجدول</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="form-group" style="grid-column:1/-1">
-      <label>المادة الدراسية</label>
-      <select class="inp" id="lec-course"></select>
-    </div>
-    <div class="form-group">
-      <label>اليوم</label>
-      <select class="inp" id="lec-day">
+<div class="ov h" id="add-lec-ov">
+<div class="mo">
+  <div class="mo-t"><i class="fas fa-calendar-plus" style="color:var(--g5)"></i> إضافة محاضرة</div>
+  <div class="mo-s">سيتم توليد كود فريد تلقائياً لكل محاضرة</div>
+  <div class="fg"><label class="lbl">المادة</label>
+    <select class="inp" id="lc-course"></select></div>
+  <div class="g2c">
+    <div class="fg"><label class="lbl">اليوم</label>
+      <select class="inp" id="lc-day">
         <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option>
         <option>الأربعاء</option><option>الخميس</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>رقم المحاضرة</label>
-      <input type="number" class="inp" id="lec-num" placeholder="1" min="1">
-    </div>
-    <div class="form-group">
-      <label>وقت البداية</label>
-      <input type="time" class="inp" id="lec-start">
-    </div>
-    <div class="form-group">
-      <label>وقت النهاية</label>
-      <input type="time" class="inp" id="lec-end">
-    </div>
-    <div class="form-group">
-      <label>القاعة</label>
-      <input type="text" class="inp" id="lec-room" placeholder="قاعة 204">
-    </div>
-    <div class="form-group">
-      <label>التكرار</label>
-      <select class="inp" id="lec-repeat">
-        <option value="once">مرة واحدة</option>
-        <option value="weekly">أسبوعياً</option>
-        <option value="monthly">شهرياً</option>
-      </select>
-    </div>
+      </select></div>
+    <div class="fg"><label class="lbl">رقم المحاضرة</label>
+      <input type="number" class="inp" id="lc-num" value="1" min="1" oninput="previewCode()"></div>
   </div>
-  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-top:4px">
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px"><i class="fas fa-key" style="color:var(--blue-l)"></i> سيتم توليد كود فريد تلقائياً</div>
-    <div style="font-family:monospace;font-size:14px;font-weight:700;color:var(--blue-l)" id="preview-code">LEC-XXXXXXX</div>
+  <div class="g2c">
+    <div class="fg"><label class="lbl">وقت البدء</label><input type="time" class="inp" id="lc-s"></div>
+    <div class="fg"><label class="lbl">وقت الانتهاء</label><input type="time" class="inp" id="lc-e"></div>
   </div>
-  <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeModal('add-lec-modal')">إلغاء</button>
-    <button class="btn btn-blue" onclick="saveLecture()" style="flex:1"><i class="fas fa-save"></i> حفظ المحاضرة</button>
+  <div class="g2c">
+    <div class="fg"><label class="lbl">القاعة</label><input class="inp" id="lc-room" placeholder="قاعة 204"></div>
+    <div class="fg"><label class="lbl">التكرار</label>
+      <select class="inp" id="lc-rep">
+        <option value="1">مرة واحدة</option>
+        <option value="14">أسبوعياً (14 أسبوع)</option>
+        <option value="4">شهرياً (4 أسابيع)</option>
+      </select></div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-top:4px">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:5px"><i class="fas fa-key" style="color:var(--g5)"></i> الكود المولّد تلقائياً</div>
+    <div style="font-family:monospace;font-size:15px;font-weight:800;color:var(--g5)" id="code-prev">---</div>
+  </div>
+  <div class="mo-f">
+    <button class="btn btn-o" onclick="closeOv('add-lec-ov')">إلغاء</button>
+    <button class="btn btn-g" onclick="saveLec()" style="flex:1"><i class="fas fa-save"></i> حفظ</button>
   </div>
 </div>
 </div>
 
-<!-- LECTURE DETAIL MODAL -->
-<div class="modal-overlay hidden" id="lec-detail-modal">
-<div class="modal">
-  <div class="modal-title" id="ldc-title">تفاصيل المحاضرة</div>
-  <div class="modal-sub" id="ldc-sub"></div>
-  <div id="ldc-content"></div>
-  <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeModal('lec-detail-modal')">إغلاق</button>
-    <button class="btn btn-blue btn-sm" id="ldc-open-btn"><i class="fas fa-play"></i> فتح جلسة الحضور</button>
-    <button class="btn btn-danger btn-sm" id="ldc-delete-btn"><i class="fas fa-trash"></i> حذف</button>
+<!-- START SESSION MODAL -->
+<div class="ov h" id="start-sess-ov">
+<div class="mo">
+  <div class="mo-t"><i class="fas fa-play-circle" style="color:var(--g5)"></i> فتح جلسة حضور</div>
+  <div class="mo-s">اختر المحاضرة لبدء تسجيل الحضور</div>
+  <div class="fg"><label class="lbl">المادة والمحاضرة</label>
+    <select class="inp" id="ss-lec"></select></div>
+  <div class="mo-f">
+    <button class="btn btn-o" onclick="closeOv('start-sess-ov')">إلغاء</button>
+    <button class="btn btn-g" onclick="startSession()" style="flex:1"><i class="fas fa-broadcast-tower"></i> بدء</button>
   </div>
 </div>
 </div>
 
-<!-- NEW SESSION MODAL -->
-<div class="modal-overlay hidden" id="new-sess-modal">
-<div class="modal">
-  <div class="modal-title"><i class="fas fa-play-circle" style="color:var(--blue)"></i> فتح جلسة حضور جديدة</div>
-  <div class="modal-sub">حدد المادة ورقم المحاضرة لبدء تسجيل الحضور</div>
-  <div class="form-group">
-    <label>المادة الدراسية</label>
-    <select class="inp" id="sess-course-select"></select>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div class="form-group">
-      <label>رقم المحاضرة</label>
-      <input type="number" class="inp" id="sess-lecture-num" placeholder="1" min="1">
-    </div>
-    <div class="form-group">
-      <label>القاعة</label>
-      <input type="text" class="inp" id="sess-room" placeholder="قاعة 204">
-    </div>
-  </div>
-  <div class="form-group">
-    <label>ملاحظات (اختياري)</label>
-    <input type="text" class="inp" id="sess-notes" placeholder="أي ملاحظات للجلسة...">
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeModal('new-sess-modal')">إلغاء</button>
-    <button class="btn btn-blue" onclick="startSession()" style="flex:1"><i class="fas fa-broadcast-tower"></i> بدء الجلسة</button>
+<!-- MANUAL MODAL -->
+<div class="ov h" id="manual-ov">
+<div class="mo">
+  <div class="mo-t"><i class="fas fa-user-plus" style="color:var(--g5)"></i> تسجيل حضور يدوي</div>
+  <div class="mo-s">ابحث عن الطالب بالرقم الجامعي</div>
+  <div class="fg"><label class="lbl">الرقم الجامعي</label>
+    <input class="inp" id="m-univ" placeholder="2024-XXXX" oninput="searchSt()"></div>
+  <div id="m-result" style="margin-bottom:10px"></div>
+  <div class="fg"><label class="lbl">الحالة</label>
+    <select class="inp" id="m-st">
+      <option value="present">حاضر</option><option value="late">متأخر</option><option value="absent">غائب</option>
+    </select></div>
+  <div class="mo-f">
+    <button class="btn btn-o" onclick="closeOv('manual-ov')">إلغاء</button>
+    <button class="btn btn-g" onclick="saveManual()" style="flex:1"><i class="fas fa-save"></i> حفظ</button>
   </div>
 </div>
 </div>
 
-<!-- MANUAL ATTENDANCE MODAL -->
-<div class="modal-overlay hidden" id="manual-att-modal">
-<div class="modal">
-  <div class="modal-title"><i class="fas fa-user-plus" style="color:var(--blue)"></i> إضافة حضور يدوي</div>
-  <div class="modal-sub">ابحث عن الطالب وسجّل حضوره أو غيابه</div>
-  <div class="form-group">
-    <label>الرقم الجامعي</label>
-    <input type="text" class="inp" id="manual-univ-num" placeholder="2024-XXXX" oninput="searchStudentManual()">
-  </div>
-  <div id="manual-student-result" style="margin-bottom:12px"></div>
-  <div class="form-group">
-    <label>الحالة</label>
-    <select class="inp" id="manual-status">
-      <option value="present">حاضر</option>
-      <option value="late">متأخر</option>
-      <option value="absent">غائب</option>
-    </select>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeModal('manual-att-modal')">إلغاء</button>
-    <button class="btn btn-blue" onclick="saveManualAttendance()" style="flex:1"><i class="fas fa-save"></i> حفظ</button>
-  </div>
-</div>
-</div>
-
-<!-- STUDENT DETAIL MODAL -->
-<div class="modal-overlay hidden" id="student-detail-modal">
-<div class="modal">
-  <div class="modal-title" id="sd-title">تفاصيل الطالب</div>
-  <div class="modal-sub" id="sd-sub">سجل الحضور التفصيلي</div>
-  <div id="sd-content"></div>
-  <div class="modal-footer">
-    <button class="btn btn-ghost" onclick="closeModal('student-detail-modal')">إغلاق</button>
-    <button class="btn btn-amber btn-sm" onclick="closeModal('student-detail-modal')"><i class="fas fa-exclamation-triangle"></i> إرسال تحذير</button>
-  </div>
-</div>
-</div>
-
-<div class="toast" id="toast"></div>
+<div class="toast h" id="toast-el"></div>
 
 <script>
-const { createClient } = supabase;
-const SUPABASE_URL = 'https://ejncunjxelbmtiaktflk.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_i7isUmeeTgXgDvkkd_Oj7w_aE71iiFv';
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const {createClient}=supabase;
+const sb=createClient('https://ejncunjxelbmtiaktflk.supabase.co','sb_publishable_i7isUmeeTgXgDvkkd_Oj7w_aE71iiFv');
 
-let currentUser = null;
-let doctorData = null;
-let activeSession = null;
-let qrInterval = null;
-let qrCountdown = 15;
-let allStudents = [];
-let allCourses = [];
+let user=null,doctor=null,courses=[],lectures=[],activeSess=null,qrInt=null,qrSec=15,liveInt=null,selStudentId=null;
 
-// ===== INIT =====
-window.addEventListener('load', async () => {
-  setDate();
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) { currentUser = session.user; await loadDoctorData(); showApp(); }
+// ── INIT ──
+window.addEventListener('load',async()=>{
+  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('ar-SY',{weekday:'long',month:'long',day:'numeric'});
+  const {data:{session}}=await sb.auth.getSession();
+  if(session){user=session.user;await boot();showApp();}
 });
 
-function setDate() {
-  const d = new Date();
-  const el = document.getElementById('home-date');
-  if (el) el.textContent = d.toLocaleDateString('ar-SY', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+async function boot(){
+  const {data}=await sb.from('doctors').select('*').eq('user_id',user.id).single();
+  doctor=data||{full_name:user.email?.split('@')[0]||'الدكتور',faculty:'--',department:'--',email:user.email};
+  updateUI();
+  await Promise.all([loadCourses(),loadLectures(),loadStats()]);
 }
 
-// ===== AUTH =====
-async function doLogin() {
-  const email = document.getElementById('l-email').value.trim();
-  const pass = document.getElementById('l-pass').value;
-  if (!email || !pass) { toast('أدخل البريد الإلكتروني وكلمة المرور', 'error'); return; }
-  const btn = document.getElementById('login-btn');
-  setBtnLoad(btn, true, 'جارٍ الدخول...');
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  setBtnLoad(btn, false, '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول');
-  if (error) { toast('بيانات الدخول غير صحيحة', 'error'); return; }
-  currentUser = data.user;
-  await loadDoctorData();
-  showApp();
+function updateUI(){
+  if(!doctor)return;
+  const n=doctor.full_name||'الدكتور';
+  const ini=n.split(' ').slice(0,2).map(w=>w[0]).join('');
+  ['sb-av','p-av'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=ini;});
+  document.getElementById('sb-nm').textContent=n;
+  document.getElementById('sb-dp').textContent=doctor.department||'--';
+  document.getElementById('greet').textContent='مرحباً، '+n.split(' ')[0]+'!';
+  document.getElementById('p-nm').textContent=n;
+  document.getElementById('p-dp').textContent=(doctor.faculty||'')+(doctor.department?' · '+doctor.department:'');
 }
 
-async function doLogout() {
-  clearInterval(qrInterval);
+// ── AUTH ──
+async function doLogin(){
+  const em=document.getElementById('l-em').value.trim();
+  const pw=document.getElementById('l-pw').value;
+  if(!em||!pw){toast('أدخل البيانات المطلوبة','tr');return;}
+  const btn=document.getElementById('l-btn');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جارٍ الدخول...';
+  const {data,error}=await sb.auth.signInWithPassword({email:em,password:pw});
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-sign-in-alt"></i> دخول';
+  if(error){toast('بيانات غير صحيحة','tr');return;}
+  user=data.user;await boot();showApp();
+}
+
+async function doLogout(){
+  clearInterval(qrInt);clearInterval(liveInt);
   await sb.auth.signOut();
-  currentUser = null; doctorData = null; activeSession = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('auth-section').style.display = 'block';
-  toast('تم تسجيل الخروج', 'info');
+  user=null;doctor=null;activeSess=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-wrap').style.display='block';
 }
 
-// ===== LOAD DOCTOR DATA =====
-async function loadDoctorData() {
-  if (!currentUser) return;
-  // Try doctors table first, fallback to email info
-  const { data } = await sb.from('doctors').select('*').eq('user_id', currentUser.id).single();
-  doctorData = data || { full_name: currentUser.email?.split('@')[0] || 'الدكتور', faculty: '--', department: '--', email: currentUser.email, user_id: currentUser.id };
-  updateDoctorUI();
-  await Promise.all([loadCourses(), loadStats(), loadRecentSessions(), loadNotifications(), loadSchedule()]);
+function showApp(){
+  document.getElementById('auth-wrap').style.display='none';
+  document.getElementById('app').style.display='block';
 }
 
-function updateDoctorUI() {
-  if (!doctorData) return;
-  const name = doctorData.full_name || 'الدكتور';
-  const initials = name.split(' ').slice(0,2).map(w=>w[0]).join('');
-  ['sb-avatar','tb-avatar','p-avatar'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=initials; });
-  ['sb-name','tb-name'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=name; });
-  document.getElementById('sb-dept').textContent = doctorData.department || '--';
-  document.getElementById('home-greeting').textContent = 'مرحباً، ' + name.split(' ')[0] + '!';
-  document.getElementById('p-name').textContent = name;
-  document.getElementById('p-dept').textContent = (doctorData.faculty||'') + ' · ' + (doctorData.department||'');
-  const grid = document.getElementById('p-info-grid');
-  if (grid) {
-    const fields = [['الاسم الكامل',name],['البريد الإلكتروني',doctorData.email||'--'],
-      ['الكلية',doctorData.faculty||'--'],['القسم',doctorData.department||'--'],
-      ['الرقم الوظيفي',doctorData.employee_id||'--'],['تاريخ الانضمام',doctorData.created_at?new Date(doctorData.created_at).toLocaleDateString('ar-SY'):'--']];
-    grid.innerHTML = fields.map(([l,v])=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">${l}</div><div style="font-size:12px;font-weight:500">${v}</div></div>`).join('');
-  }
+// ── COURSES ──
+async function loadCourses(){
+  const {data}=await sb.from('lectures').select('course_name,faculty,department,section').eq('instructor_id',user.id);
+  // unique by course_name
+  const map=new Map();
+  (data||[]).forEach(r=>{if(!map.has(r.course_name))map.set(r.course_name,r);});
+  courses=[...map.values()];
+  document.getElementById('h-courses').textContent=courses.length;
+  renderCourses();
+  // fill selects
+  const fc=document.getElementById('f-course');
+  if(fc){fc.innerHTML='<option value="">الكل</option>'+courses.map(c=>`<option value="${c.course_name}">${c.course_name}</option>`).join('');}
 }
 
-// ===== COURSES =====
-async function loadCourses() {
-  const el = document.getElementById('courses-grid');
-  if (!currentUser) return;
-
-  // Get courses linked to this doctor
-  const { data } = await sb.from('lectures').select('*').eq('instructor_id', currentUser.id);
-  // Fallback: get all lectures if no instructor_id match (demo mode)
-  const { data: allLecs } = await sb.from('lectures').select('*');
-  allCourses = data?.length ? data : (allLecs || []);
-
-  // Unique courses
-  const uniqueCourses = [];
-  const seen = new Set();
-  allCourses.forEach(c => {
-    if (!seen.has(c.course_name)) { seen.add(c.course_name); uniqueCourses.push(c); }
-  });
-
-  document.getElementById('st-courses').textContent = uniqueCourses.length;
-
-  // Update filter selects
-  ['filter-course','sess-course-select','student-course-filter'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const extra = id === 'sess-course-select' ? '' : '<option value="">الكل</option>';
-    sel.innerHTML = extra + uniqueCourses.map(c=>`<option value="${c.id}">${c.course_name} - شعبة ${c.section||'--'}</option>`).join('');
-  });
-
-  const colors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a78bfa','#06b6d4'];
-  if (el) el.innerHTML = uniqueCourses.length ? uniqueCourses.map((c,i) => {
-    return `<div class="course-card" style="--cc:${colors[i%colors.length]}" onclick="showCourseDetail('${c.id}')">
-      <div style="position:absolute;top:0;right:0;width:3px;height:100%;background:${colors[i%colors.length]};border-radius:0 var(--rl) var(--rl) 0"></div>
-      <div class="cc-name">${c.course_name||'مادة'}</div>
-      <div class="cc-meta"><i class="fas fa-users" style="font-size:10px"></i> شعبة ${c.section||'--'} · ${c.faculty||''} · ${c.department||''}</div>
-      <div class="cc-meta" style="margin-top:3px"><i class="fas fa-door-open" style="font-size:10px"></i> قاعة ${c.room||'--'} · ${c.day_of_week||''} ${c.start_time||''}–${c.end_time||''}</div>
-      <div class="cc-stats">
-        <div class="cc-stat">محاضرة رقم: <span>${c.lecture_number||0}</span></div>
-        <div class="cc-stat">الطلاب: <span id="course-st-${c.id}">--</span></div>
-      </div>
-      <div style="display:flex;gap:6px;margin-top:10px">
-        <button class="btn btn-blue btn-sm" onclick="event.stopPropagation();openNewSessionModalFor('${c.id}')"><i class="fas fa-play"></i> فتح جلسة</button>
-        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showSec('reports')"><i class="fas fa-chart-bar"></i> تقارير</button>
-      </div>
-    </div>`;
-  }).join('') : '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text3)"><i class="fas fa-book" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px"></i>لا توجد مواد مسجّلة. تواصل مع الإدارة لإضافة موادك.</div>';
-
-  loadTodayCourses(uniqueCourses);
-  loadStudents(uniqueCourses);
-}
-
-function loadTodayCourses(courses) {
-  const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const today = days[new Date().getDay()];
-  const todayC = courses.filter(c => c.day_of_week === today);
-  const el = document.getElementById('today-courses');
-  if (!el) return;
-  if (!todayC.length) { el.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:14px">لا محاضرات اليوم</div>'; return; }
-  const colors = ['#3b82f6','#22c55e','#f59e0b','#ef4444'];
-  el.innerHTML = todayC.map((c,i)=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="openNewSessionModalFor('${c.id}')">
-      <div style="width:3px;height:36px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0"></div>
+function renderCourses(){
+  const el=document.getElementById('courses-list');
+  if(!el)return;
+  const cols=['#2dd48a','#60a5fa','#fbbf24','#f87171','#a78bfa','#34d399'];
+  if(!courses.length){el.innerHTML='<div class="card" style="text-align:center;padding:24px;color:var(--muted)"><i class="fas fa-book" style="font-size:28px;opacity:.3;display:block;margin-bottom:8px"></i>لا توجد مواد. أضف مادة جديدة.</div>';return;}
+  el.innerHTML=courses.map((c,i)=>`
+    <div class="cp">
+      <div class="cp-dot" style="background:${cols[i%cols.length]}"></div>
       <div style="flex:1">
-        <div style="font-size:12px;font-weight:600">${c.course_name}</div>
-        <div style="font-size:10px;color:var(--text3)">قاعة ${c.room||'--'} · شعبة ${c.section||'--'} · ${c.start_time||''}–${c.end_time||''}</div>
+        <div class="cp-name">${c.course_name}</div>
+        <div class="cp-meta">${c.faculty||'--'} · ${c.department||'--'} · شعبة ${c.section||'--'}</div>
       </div>
-      ${c.is_active ? '<span class="badge bg">مفتوحة</span>' : `<span style="font-size:10px;color:var(--text3)">${c.start_time||'--'}</span>`}
-    </div>
-  `).join('');
-}
-
-async function loadStudents(courses) {
-  if (!courses.length) return;
-  const faculties = [...new Set(courses.map(c=>c.faculty).filter(Boolean))];
-  const sections = [...new Set(courses.map(c=>c.section).filter(Boolean))];
-  let query = sb.from('students').select('*');
-  if (faculties.length) query = query.in('faculty', faculties);
-  const { data } = await query;
-  allStudents = data || [];
-  document.getElementById('st-students').textContent = allStudents.length;
-  renderStudentsTable(allStudents);
-}
-
-function renderStudentsTable(students) {
-  const tbody = document.getElementById('students-tbody');
-  if (!tbody) return;
-  if (!students.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text3)">لا يوجد طلاب</td></tr>'; return; }
-  tbody.innerHTML = students.map(s => {
-    const initials = (s.full_name||'').split(' ').slice(0,2).map(w=>w[0]||'').join('');
-    return `<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div class="sb-avatar" style="width:26px;height:26px;font-size:10px">${initials}</div>
-        <span>${s.full_name||'--'}</span>
-      </div></td>
-      <td>${s.university_number||'--'}</td>
-      <td>${s.faculty||'--'}</td>
-      <td>${s.section||'--'}</td>
-      <td id="att-present-${s.id}">--</td>
-      <td id="att-absent-${s.id}">--</td>
-      <td id="att-pct-${s.id}">--%</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="showStudentDetail('${s.id}')"><i class="fas fa-eye"></i></button></td>
-    </tr>`;
-  }).join('');
-  loadStudentStats(students);
-}
-
-async function loadStudentStats(students) {
-  for (const s of students.slice(0, 30)) {
-    const { data } = await sb.from('attendance_records').select('status').eq('student_id', s.id);
-    if (!data) continue;
-    const pres = data.filter(r=>r.status==='present').length;
-    const abs = data.filter(r=>r.status==='absent').length;
-    const tot = data.length || 1;
-    const pct = Math.round((pres/tot)*100);
-    const pctEl = document.getElementById('att-pct-'+s.id);
-    if (pctEl) { pctEl.innerHTML = `<span class="badge ${pct>=75?'bg':pct>=50?'ba':'br'}">${pct}%</span>`; }
-    const presEl = document.getElementById('att-present-'+s.id);
-    const absEl = document.getElementById('att-absent-'+s.id);
-    if (presEl) presEl.textContent = pres;
-    if (absEl) absEl.textContent = abs;
-  }
-}
-
-function filterStudents() {
-  const q = document.getElementById('student-search').value.toLowerCase();
-  const filtered = allStudents.filter(s =>
-    (s.full_name||'').toLowerCase().includes(q) ||
-    (s.university_number||'').toLowerCase().includes(q)
-  );
-  renderStudentsTable(filtered);
-}
-
-async function showStudentDetail(studentId) {
-  const s = allStudents.find(st=>st.id===studentId);
-  if (!s) return;
-  const { data } = await sb.from('attendance_records').select('*').eq('student_id', studentId).order('lecture_date',{ascending:false});
-  const pres = data ? data.filter(r=>r.status==='present').length : 0;
-  const abs = data ? data.filter(r=>r.status==='absent').length : 0;
-  const late = data ? data.filter(r=>r.status==='late').length : 0;
-  const tot = data?.length || 1;
-  const pct = Math.round((pres/tot)*100);
-  document.getElementById('sd-title').textContent = s.full_name || 'الطالب';
-  document.getElementById('sd-sub').textContent = s.university_number + ' · ' + (s.faculty||'') + ' · شعبة ' + (s.section||'');
-  document.getElementById('sd-content').innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green-l)">${pres}</div><div style="font-size:10px;color:var(--text3)">حضور</div></div>
-      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--red-l)">${abs}</div><div style="font-size:10px;color:var(--text3)">غياب</div></div>
-      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--amber-l)">${late}</div><div style="font-size:10px;color:var(--text3)">تأخير</div></div>
-      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--blue-l)">${pct}%</div><div style="font-size:10px;color:var(--text3)">النسبة</div></div>
-    </div>
-    <div class="prog-bar" style="margin-bottom:14px"><div class="prog-fill ${pct>=75?'pf-green':pct>=50?'pf-amber':'pf-red'}" style="width:${pct}%"></div></div>
-    <div style="max-height:200px;overflow-y:auto">
-    ${data?.slice(0,10).map(r=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px">
-        <span>${r.course_name||'--'} · محاضرة ${r.lecture_number||'--'}</span>
-        <span>${r.lecture_date?new Date(r.lecture_date).toLocaleDateString('ar-SY'):''}</span>
-        <span class="badge ${r.status==='present'?'bg':r.status==='absent'?'br':'ba'}">${r.status==='present'?'حاضر':r.status==='absent'?'غائب':'متأخر'}</span>
-      </div>`).join('') || '<div style="text-align:center;color:var(--text3);padding:14px">لا توجد سجلات</div>'}
-    </div>`;
-  document.getElementById('student-detail-modal').classList.remove('hidden');
-}
-
-// ===== STATS =====
-async function loadStats() {
-  const { data } = await sb.from('attendance_records').select('status');
-  if (!data) return;
-  const pres = data.filter(r=>r.status==='present').length;
-  const tot = data.length || 1;
-  const avg = Math.round((pres/tot)*100);
-  document.getElementById('st-avg').textContent = avg + '%';
-  document.getElementById('st-lectures').textContent = Math.round(tot / Math.max(allStudents.length, 1)) || 0;
-
-  // Attendance chart
-  const el = document.getElementById('home-att-chart');
-  if (!el) return;
-  const absent = data.filter(r=>r.status==='absent').length;
-  const late = data.filter(r=>r.status==='late').length;
-  el.innerHTML = [
-    ['حاضر', pres, tot, 'pf-green', 'var(--green-l)'],
-    ['غائب', absent, tot, 'pf-red', 'var(--red-l)'],
-    ['متأخر', late, tot, 'pf-amber', 'var(--amber-l)']
-  ].map(([label, count, total, cls, color]) => `
-    <div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
-        <span style="color:${color}">${label}</span>
-        <span style="color:var(--text3)">${count} (${Math.round(count/total*100)}%)</span>
-      </div>
-      <div class="prog-bar"><div class="prog-fill ${cls}" style="width:${Math.round(count/total*100)}%"></div></div>
-    </div>
-  `).join('');
-}
-
-async function loadRecentSessions() {
-  const { data } = await sb.from('lectures').select('*').order('id', {ascending:false}).limit(5);
-  const el = document.getElementById('recent-sessions');
-  if (!el) return;
-  if (!data?.length) { el.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:14px">لا توجد جلسات سابقة</div>'; return; }
-  el.innerHTML = `<table class="tbl"><thead><tr><th>المادة</th><th>الشعبة</th><th>القاعة</th><th>المحاضرة</th><th>اليوم</th><th>الحالة</th></tr></thead><tbody>
-    ${data.map(l=>`<tr>
-      <td>${l.course_name||'--'}</td><td>${l.section||'--'}</td><td>${l.room||'--'}</td>
-      <td>${l.lecture_number||'--'}</td><td>${l.day_of_week||'--'}</td>
-      <td>${l.is_active?'<span class="badge bg">مفتوحة</span>':'<span class="badge bb">منتهية</span>'}</td>
-    </tr>`).join('')}
-  </tbody></table>`;
-}
-
-// ===== SESSION =====
-function openNewSessionModal() {
-  if (!allCourses.length) { toast('لا توجد مواد مسجّلة', 'error'); return; }
-  const sel = document.getElementById('sess-course-select');
-  if (!sel.options.length) {
-    const unique = [...new Map(allCourses.map(c=>[c.course_name, c])).values()];
-    sel.innerHTML = unique.map(c=>`<option value="${c.id}">${c.course_name} - شعبة ${c.section||'--'}</option>`).join('');
-  }
-  document.getElementById('new-sess-modal').classList.remove('hidden');
-}
-
-function openNewSessionModalFor(courseId) {
-  openNewSessionModal();
-  const sel = document.getElementById('sess-course-select');
-  if (sel) sel.value = courseId;
-}
-
-async function startSession() {
-  const courseId = document.getElementById('sess-course-select').value;
-  const lectureNum = parseInt(document.getElementById('sess-lecture-num').value) || 1;
-  const room = document.getElementById('sess-room').value.trim() || '--';
-  if (!courseId) { toast('اختر المادة', 'error'); return; }
-
-  const course = allCourses.find(c=>c.id===courseId);
-  if (!course) return;
-
-  // Close any existing active session
-  await sb.from('lectures').update({ is_active: false }).eq('is_active', true);
-
-  // Update lecture record as active
-  const { error } = await sb.from('lectures').update({
-    is_active: true, lecture_number: lectureNum, room,
-    qr_code: generateQRCode()
-  }).eq('id', courseId);
-
-  if (error) { toast('خطأ في فتح الجلسة: ' + error.message, 'error'); return; }
-
-  activeSession = { id: courseId, course_name: course.course_name, section: course.section, room, lecture_number: lectureNum };
-  closeModal('new-sess-modal');
-  showSec('session');
-  renderActiveSession();
-  toast('تم فتح جلسة الحضور بنجاح', 'success');
-  document.getElementById('active-session-badge').style.display = 'inline';
-}
-
-function generateQRCode() {
-  return 'RASAD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2,4).toUpperCase();
-}
-
-function renderActiveSession() {
-  document.getElementById('no-session-panel').classList.add('hidden');
-  document.getElementById('active-session-panel').classList.remove('hidden');
-  document.getElementById('sess-course-name').textContent = activeSession.course_name;
-  document.getElementById('sess-meta').textContent = `شعبة ${activeSession.section||'--'} · قاعة ${activeSession.room} · المحاضرة ${activeSession.lecture_number}`;
-
-  const code = generateQRCode();
-  document.getElementById('qr-session-code').textContent = 'كود الجلسة: ' + code;
-  renderQR(code);
-
-  // Get GPS
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      document.getElementById('gps-coords').textContent = pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4);
-    });
-  }
-
-  startQRTimer();
-  startLiveAttendance();
-}
-
-function renderQR(code) {
-  const canvas = document.getElementById('qr-canvas');
-  if (!canvas) return;
-  QRCode.toCanvas(canvas, code || 'RASAD-SESSION', { width: 160, margin: 1, color: { dark: '#000000', light: '#ffffff' } });
-}
-
-function refreshQR() {
-  const code = generateQRCode();
-  document.getElementById('qr-session-code').textContent = 'كود الجلسة: ' + code;
-  renderQR(code);
-  qrCountdown = 15;
-  document.getElementById('qr-countdown').textContent = '🔄 ' + qrCountdown + 's';
-  if (activeSession) sb.from('lectures').update({ qr_code: code }).eq('id', activeSession.id);
-}
-
-function startQRTimer() {
-  clearInterval(qrInterval);
-  qrCountdown = 15;
-  qrInterval = setInterval(() => {
-    qrCountdown--;
-    const el = document.getElementById('qr-countdown');
-    if (el) el.textContent = '🔄 ' + qrCountdown + 's';
-    if (qrCountdown <= 0) refreshQR();
-  }, 1000);
-}
-
-// Live attendance polling
-let liveInterval = null;
-async function startLiveAttendance() {
-  if (liveInterval) clearInterval(liveInterval);
-  await fetchLiveAttendance();
-  liveInterval = setInterval(fetchLiveAttendance, 5000);
-}
-
-async function fetchLiveAttendance() {
-  if (!activeSession) return;
-  const { data } = await sb.from('attendance_records').select(`*, students(full_name, university_number)`)
-    .eq('course_name', activeSession.course_name)
-    .eq('lecture_number', activeSession.lecture_number)
-    .order('recorded_at', { ascending: false });
-
-  if (!data) return;
-  const present = data.filter(r=>r.status==='present'||r.status==='late');
-  const absent = data.filter(r=>r.status==='absent');
-
-  document.getElementById('present-count').textContent = present.length;
-  document.getElementById('sf-present').textContent = present.length;
-  document.getElementById('sf-absent').textContent = absent.length;
-  document.getElementById('sf-total').textContent = data.length;
-
-  const list = document.getElementById('live-student-list');
-  if (!list) return;
-  if (!present.length) { list.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px">في انتظار تسجيل الطلاب...</div>'; return; }
-
-  list.innerHTML = present.map(r => {
-    const name = r.students?.full_name || 'طالب';
-    const univ = r.students?.university_number || '--';
-    const initials = name.split(' ').slice(0,2).map(w=>w[0]||'').join('');
-    const time = r.recorded_at ? new Date(r.recorded_at).toLocaleTimeString('ar-SY',{hour:'2-digit',minute:'2-digit'}) : '';
-    const statusCls = r.status==='present' ? 'bg' : 'ba';
-    const statusTxt = r.status==='present' ? 'حاضر' : 'متأخر';
-    return `<div class="sl-item">
-      <div class="sl-avatar" style="background:rgba(34,197,94,0.15);color:var(--green-l)">${initials}</div>
-      <div style="flex:1"><div class="sl-name">${name}</div><div class="sl-id">${univ}</div></div>
-      <div class="sl-time">${time}</div>
-      <span class="badge ${statusCls}">${statusTxt}</span>
-      <button onclick="editAttStatus('${r.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:2px 4px" title="تعديل"><i class="fas fa-edit"></i></button>
-    </div>`;
-  }).join('');
-}
-
-async function closeSession() {
-  if (!activeSession) return;
-  clearInterval(qrInterval); clearInterval(liveInterval);
-
-  // Mark absent for enrolled students who didn't attend
-  const { data: enrolled } = await sb.from('students').select('id').eq('faculty', allCourses.find(c=>c.id===activeSession.id)?.faculty || '');
-  const { data: attended } = await sb.from('attendance_records').select('student_id')
-    .eq('course_name', activeSession.course_name).eq('lecture_number', activeSession.lecture_number);
-  const attendedIds = new Set((attended||[]).map(r=>r.student_id));
-
-  if (enrolled) {
-    const absentRecords = enrolled.filter(s=>!attendedIds.has(s.id)).map(s=>({
-      student_id: s.id, course_name: activeSession.course_name,
-      lecture_number: activeSession.lecture_number, status: 'absent',
-      lecture_date: new Date().toISOString().split('T')[0]
-    }));
-    if (absentRecords.length) await sb.from('attendance_records').insert(absentRecords);
-  }
-
-  await sb.from('lectures').update({ is_active: false }).eq('id', activeSession.id);
-  activeSession = null;
-
-  document.getElementById('no-session-panel').classList.remove('hidden');
-  document.getElementById('active-session-panel').classList.add('hidden');
-  document.getElementById('active-session-badge').style.display = 'none';
-  toast('تم إنهاء الجلسة وحفظ سجلات الغياب تلقائياً', 'success');
-  await loadStats(); await loadRecentSessions();
-}
-
-// ===== MANUAL ATTENDANCE =====
-function openManualAttModal() { document.getElementById('manual-att-modal').classList.remove('hidden'); }
-
-async function searchStudentManual() {
-  const q = document.getElementById('manual-univ-num').value.trim();
-  const el = document.getElementById('manual-student-result');
-  if (q.length < 3) { el.innerHTML = ''; return; }
-  const { data } = await sb.from('students').select('*').ilike('university_number', `%${q}%`).limit(3);
-  if (!data?.length) { el.innerHTML = '<div style="font-size:11px;color:var(--text3)">لا يوجد طالب بهذا الرقم</div>'; return; }
-  el.innerHTML = data.map(s=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--bg2);border-radius:8px;border:1px solid var(--border);margin-bottom:4px;cursor:pointer" onclick="selectStudentManual('${s.id}','${s.full_name}','${s.university_number}')">
-      <div class="sb-avatar" style="width:26px;height:26px;font-size:10px">${(s.full_name||'').split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
-      <div><div style="font-size:12px;font-weight:600">${s.full_name}</div><div style="font-size:10px;color:var(--text3)">${s.university_number}</div></div>
+      <button class="btn btn-g btn-sm" onclick="quickOpenSess('${c.course_name}')"><i class="fas fa-play"></i> جلسة</button>
+      <button class="btn btn-o btn-sm" onclick="go('reports')"><i class="fas fa-chart-bar"></i></button>
     </div>`).join('');
 }
 
-let selectedStudentId = null;
-function selectStudentManual(id, name, univ) {
-  selectedStudentId = id;
-  document.getElementById('manual-student-result').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:8px;background:rgba(34,197,94,0.1);border-radius:8px;border:1px solid rgba(34,197,94,0.3)"><i class="fas fa-check-circle" style="color:var(--green)"></i><div><div style="font-size:12px;font-weight:600">${name}</div><div style="font-size:10px;color:var(--text3)">${univ}</div></div></div>`;
+async function saveCourse(){
+  const name=document.getElementById('c-name').value.trim();
+  const fac=document.getElementById('c-fac').value.trim();
+  const dept=document.getElementById('c-dept').value.trim();
+  const sec=document.getElementById('c-sec').value;
+  if(!name){toast('أدخل اسم المادة','tr');return;}
+  // We store course by inserting a placeholder lecture entry
+  const code=genCode(name,'--',0);
+  const {error}=await sb.from('lectures').insert({
+    course_name:name,faculty:fac,department:dept,section:sec,
+    instructor_id:user.id,qr_code:code,lecture_number:0,is_active:false
+  });
+  if(error){toast('خطأ: '+error.message,'tr');return;}
+  closeOv('add-course-ov');
+  toast('تم إضافة المادة ✓','tg');
+  await loadCourses();await loadLectures();
 }
 
-async function saveManualAttendance() {
-  if (!selectedStudentId || !activeSession) { toast('حدد الطالب وتأكد من وجود جلسة مفتوحة', 'error'); return; }
-  const status = document.getElementById('manual-status').value;
-  const { error } = await sb.from('attendance_records').insert({
-    student_id: selectedStudentId, course_name: activeSession.course_name,
-    lecture_number: activeSession.lecture_number, status,
-    lecture_date: new Date().toISOString().split('T')[0]
-  });
-  if (error) { toast('خطأ: ' + error.message, 'error'); return; }
-  closeModal('manual-att-modal');
-  selectedStudentId = null;
-  await fetchLiveAttendance();
-  toast('تم تسجيل الحضور يدوياً', 'success');
+// ── LECTURES ──
+async function loadLectures(){
+  const {data}=await sb.from('lectures').select('*').eq('instructor_id',user.id).order('day_of_week').gt('lecture_number',0);
+  lectures=data||[];
+  document.getElementById('h-lecs').textContent=lectures.length;
+  renderSchedule();
+  renderLecTable();
+  fillLecSelect();
 }
 
-// ===== REPORTS =====
-async function loadReports() {
-  const courseFilter = document.getElementById('filter-course')?.value;
-  const periodFilter = document.getElementById('filter-period')?.value;
-  const statusFilter = document.getElementById('filter-status')?.value;
-  let query = sb.from('attendance_records').select(`*, students(full_name, university_number)`).order('recorded_at',{ascending:false}).limit(100);
-  if (statusFilter) query = query.eq('status', statusFilter);
-  const { data } = await query;
-  const tbody = document.getElementById('reports-tbody');
-  if (!tbody) return;
-  const filtered = (data||[]).filter(r => {
-    if (courseFilter) { const c = allCourses.find(c=>c.id===courseFilter); if(c && r.course_name !== c.course_name) return false; }
-    return true;
-  });
-  tbody.innerHTML = filtered.length ? filtered.map(r=>`
+function genCode(course,day,num){
+  const ci=(course||'LEC').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3);
+  const dc={'الأحد':'SUN','الاثنين':'MON','الثلاثاء':'TUE','الأربعاء':'WED','الخميس':'THU'}[day]||'LEC';
+  const r=Math.random().toString(36).substr(2,4).toUpperCase();
+  return `${ci}-${dc}-${String(num).padStart(2,'0')}-${r}`;
+}
+
+function previewCode(){
+  const cs=document.getElementById('lc-course');
+  const cn=cs?.options[cs.selectedIndex]?.text||'';
+  const day=document.getElementById('lc-day')?.value||'';
+  const num=document.getElementById('lc-num')?.value||1;
+  const el=document.getElementById('code-prev');
+  if(el)el.textContent=genCode(cn,day,num);
+}
+
+function openAddLecModal(){
+  const sel=document.getElementById('lc-course');
+  if(sel)sel.innerHTML=courses.map(c=>`<option value="${c.course_name}" data-fac="${c.faculty||''}" data-dept="${c.department||''}" data-sec="${c.section||''}">${c.course_name} - شعبة ${c.section||'--'}</option>`).join('');
+  previewCode();
+  document.getElementById('add-lec-ov').classList.remove('h');
+}
+
+async function saveLec(){
+  const cs=document.getElementById('lc-course');
+  const opt=cs?.options[cs.selectedIndex];
+  const cn=opt?.value;
+  const day=document.getElementById('lc-day').value;
+  const num=parseInt(document.getElementById('lc-num').value)||1;
+  const st=document.getElementById('lc-s').value;
+  const en=document.getElementById('lc-e').value;
+  const room=document.getElementById('lc-room').value.trim()||'--';
+  const rep=parseInt(document.getElementById('lc-rep').value)||1;
+  if(!cn||!st||!en){toast('أكمل المادة والوقت','tr');return;}
+  const rows=Array.from({length:rep},(_,i)=>({
+    course_name:cn,faculty:opt?.dataset?.fac||'',department:opt?.dataset?.dept||'',
+    section:opt?.dataset?.sec||'',instructor_id:user.id,
+    day_of_week:day,start_time:st,end_time:en,room,
+    lecture_number:num+i,qr_code:genCode(cn,day,num+i),is_active:false
+  }));
+  const {error}=await sb.from('lectures').insert(rows);
+  if(error){toast('خطأ: '+error.message,'tr');return;}
+  closeOv('add-lec-ov');
+  toast(`تم إضافة ${rep} محاضرة بأكواد فريدة ✓`,'tg');
+  await loadLectures();
+}
+
+function renderSchedule(){
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
+  const cols={'الأحد':'#2dd48a','الاثنين':'#60a5fa','الثلاثاء':'#fbbf24','الأربعاء':'#a78bfa','الخميس':'#f87171'};
+  // tabs
+  const tabs=document.getElementById('day-tabs');
+  if(tabs){
+    const today=new Date().getDay();
+    const arabicToday=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][today];
+    tabs.innerHTML=days.map(d=>`<button onclick="filterDay('${d}')" id="dt-${d}" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:${d===arabicToday?'var(--g4)':'var(--bg2)'};color:${d===arabicToday?'white':'var(--muted)'};font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">${d}<span style="font-size:9px;opacity:.7;margin-right:3px">(${lectures.filter(l=>l.day_of_week===d).length})</span></button>`).join('');
+  }
+  // grid
+  const el=document.getElementById('sched-view');
+  if(!el)return;
+  const activeDays=days.filter(d=>lectures.some(l=>l.day_of_week===d));
+  if(!activeDays.length){el.innerHTML='<div class="card" style="text-align:center;padding:20px;color:var(--muted)">لا توجد محاضرات. أضف محاضرة جديدة.</div>';return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+  ${activeDays.map(d=>`
+    <div class="day-col">
+      <div class="day-hd" style="background:${cols[d]||'var(--g3)'};">${d}</div>
+      <div class="day-body">
+        ${lectures.filter(l=>l.day_of_week===d).map(l=>`
+          <div class="lec-item" style="border-right-color:${cols[d]||'var(--g3)'}">
+            <div class="ln">${l.course_name}</div>
+            <div class="lm">${l.start_time||'--'}–${l.end_time||'--'} · قاعة ${l.room||'--'}</div>
+            <div class="lm">محاضرة ${l.lecture_number}</div>
+            <div style="margin-top:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+              <span class="code-tag">${l.qr_code}</span>
+              <button onclick="quickOpenSessById('${l.id}')" style="background:none;border:none;color:var(--g5);cursor:pointer;font-size:11px;font-family:var(--font)"><i class="fas fa-play"></i></button>
+              <button onclick="delLec('${l.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function filterDay(day){
+  document.querySelectorAll('[id^="dt-"]').forEach(b=>{b.style.background='var(--bg2)';b.style.color='var(--muted)';});
+  const btn=document.getElementById('dt-'+day);
+  if(btn){btn.style.background='var(--g4)';btn.style.color='white';}
+}
+
+function renderLecTable(){
+  const tbody=document.getElementById('lec-tbody');
+  if(!tbody)return;
+  if(!lectures.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--muted)">لا توجد محاضرات</td></tr>';return;}
+  tbody.innerHTML=lectures.map(l=>`
     <tr>
-      <td><div style="display:flex;align-items:center;gap:7px"><div class="sb-avatar" style="width:24px;height:24px;font-size:9px">${(r.students?.full_name||'').split(' ').map(w=>w[0]).join('').slice(0,2)}</div>${r.students?.full_name||'--'}</div></td>
+      <td>${l.course_name||'--'}</td>
+      <td>${l.day_of_week||'--'}</td>
+      <td>${l.start_time||'--'}–${l.end_time||'--'}</td>
+      <td>${l.room||'--'}</td>
+      <td>${l.lecture_number||'--'}</td>
+      <td><span class="code-tag" style="cursor:pointer" onclick="copyCode('${l.qr_code}')" title="انسخ الكود">${l.qr_code}</span></td>
+      <td>${l.is_active?'<span class="bd bd-g">مفتوحة</span>':'<span class="bd bd-b">مجدولة</span>'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-g btn-sm" onclick="quickOpenSessById('${l.id}')"><i class="fas fa-play"></i></button>
+        <button class="btn btn-red btn-sm" onclick="delLec('${l.id}')"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+
+async function delLec(id){
+  if(!confirm('حذف هذه المحاضرة؟'))return;
+  await sb.from('lectures').delete().eq('id',id);
+  toast('تم الحذف','ti');await loadLectures();
+}
+
+function fillLecSelect(){
+  const sel=document.getElementById('ss-lec');
+  if(!sel)return;
+  sel.innerHTML=lectures.map(l=>`<option value="${l.id}">${l.course_name} · محاضرة ${l.lecture_number} · ${l.day_of_week} ${l.start_time||''}</option>`).join('');
+}
+
+function copyCode(code){
+  navigator.clipboard.writeText(code).then(()=>toast('تم نسخ: '+code,'ti'));
+}
+
+// ── SESSION ──
+function openStartSessModal(){
+  fillLecSelect();
+  document.getElementById('start-sess-ov').classList.remove('h');
+}
+
+async function quickOpenSess(courseName){
+  const lec=lectures.find(l=>l.course_name===courseName);
+  if(!lec){toast('لا توجد محاضرات لهذه المادة','tr');return;}
+  await startSessionWith(lec);
+}
+async function quickOpenSessById(id){
+  const lec=lectures.find(l=>l.id===id);
+  if(!lec)return;
+  await startSessionWith(lec);
+}
+
+async function startSession(){
+  const id=document.getElementById('ss-lec').value;
+  const lec=lectures.find(l=>l.id===id);
+  if(!lec){toast('اختر محاضرة','tr');return;}
+  closeOv('start-sess-ov');
+  await startSessionWith(lec);
+}
+
+async function startSessionWith(lec){
+  await sb.from('lectures').update({is_active:false}).eq('is_active',true);
+  await sb.from('lectures').update({is_active:true}).eq('id',lec.id);
+  activeSess={...lec};
+  document.getElementById('sess-cname').textContent=lec.course_name;
+  document.getElementById('sess-meta').textContent=`شعبة ${lec.section||'--'} · قاعة ${lec.room||'--'} · المحاضرة ${lec.lecture_number}`;
+  document.getElementById('sess-code').textContent='كود: '+lec.qr_code;
+  document.getElementById('no-sess').classList.add('h');
+  document.getElementById('act-sess').classList.remove('h');
+  document.getElementById('sess-badge').style.display='inline';
+  renderQR(lec.qr_code);startQRTimer();startLive();
+  go('session');
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(p=>{
+      document.getElementById('gps-txt').textContent=`GPS: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;
+    });
+  }
+  toast('تم فتح جلسة: '+lec.course_name,'tg');
+}
+
+function renderQR(code){
+  const cv=document.getElementById('qr-cv');if(!cv)return;
+  QRCode.toCanvas(cv,code||'RASAD',{width:150,margin:1,color:{dark:'#000',light:'#fff'}});
+}
+function refreshQR(){
+  if(!activeSess)return;
+  const code=genCode(activeSess.course_name,activeSess.day_of_week,activeSess.lecture_number)+'-R';
+  activeSess.qr_code=code;
+  document.getElementById('sess-code').textContent='كود: '+code;
+  renderQR(code);qrSec=15;
+  sb.from('lectures').update({qr_code:code}).eq('id',activeSess.id);
+}
+function startQRTimer(){
+  clearInterval(qrInt);qrSec=15;
+  qrInt=setInterval(()=>{
+    qrSec--;
+    const el=document.getElementById('qr-tm');if(el)el.textContent='🔄 '+qrSec+'s';
+    if(qrSec<=0)refreshQR();
+  },1000);
+}
+let liveInv=null;
+async function startLive(){
+  clearInterval(liveInv);await fetchLive();liveInv=setInterval(fetchLive,5000);
+}
+async function fetchLive(){
+  if(!activeSess)return;
+  const {data}=await sb.from('attendance_records')
+    .select('*,students(full_name,university_number)')
+    .eq('course_name',activeSess.course_name).eq('lecture_number',activeSess.lecture_number)
+    .order('recorded_at',{ascending:false});
+  if(!data)return;
+  const pres=data.filter(r=>r.status!=='absent');
+  const abs=data.filter(r=>r.status==='absent');
+  document.getElementById('pres-cnt').textContent=pres.length;
+  document.getElementById('abs-cnt').textContent=abs.length;
+  const list=document.getElementById('live-list');if(!list)return;
+  if(!pres.length){list.innerHTML='<p style="text-align:center;color:var(--muted);font-size:11px;padding:14px">في انتظار الطلاب...</p>';return;}
+  list.innerHTML=pres.map(r=>{
+    const nm=r.students?.full_name||'طالب';
+    const ini=nm.split(' ').slice(0,2).map(w=>w[0]||'').join('');
+    const t=r.recorded_at?new Date(r.recorded_at).toLocaleTimeString('ar-SY',{hour:'2-digit',minute:'2-digit'}):'';
+    return `<div class="st-row">
+      <div class="st-av" style="background:rgba(45,212,138,.15);color:var(--g5)">${ini}</div>
+      <div style="flex:1"><div style="font-size:11px;font-weight:600">${nm}</div><div style="font-size:10px;color:var(--muted)">${r.students?.university_number||'--'}</div></div>
+      <div style="font-size:10px;color:var(--muted)">${t}</div>
+      <span class="bd ${r.status==='present'?'bd-g':'bd-a'}">${r.status==='present'?'حاضر':'متأخر'}</span>
+    </div>`;
+  }).join('');
+}
+
+async function closeSession(){
+  if(!activeSess)return;
+  clearInterval(qrInt);clearInterval(liveInv);
+  await sb.from('lectures').update({is_active:false}).eq('id',activeSess.id);
+  activeSess=null;
+  document.getElementById('no-sess').classList.remove('h');
+  document.getElementById('act-sess').classList.add('h');
+  document.getElementById('sess-badge').style.display='none';
+  toast('تم إنهاء الجلسة','ti');
+  await loadLectures();
+}
+
+// ── MANUAL ──
+function openManualModal(){document.getElementById('manual-ov').classList.remove('h');}
+async function searchSt(){
+  const q=document.getElementById('m-univ').value.trim();
+  const el=document.getElementById('m-result');
+  if(q.length<3){el.innerHTML='';return;}
+  const {data}=await sb.from('students').select('id,full_name,university_number').ilike('university_number','%'+q+'%').limit(3);
+  if(!data?.length){el.innerHTML='<p style="font-size:11px;color:var(--muted)">لا يوجد</p>';return;}
+  el.innerHTML=data.map(s=>`
+    <div onclick="selSt('${s.id}','${s.full_name}')" style="padding:7px 9px;background:var(--bg2);border-radius:7px;border:1px solid var(--border);cursor:pointer;margin-bottom:4px;font-size:11px">
+      <b>${s.full_name}</b> · ${s.university_number}
+    </div>`).join('');
+}
+function selSt(id,name){
+  selStudentId=id;
+  document.getElementById('m-result').innerHTML=`<div style="padding:7px;background:rgba(45,212,138,.1);border-radius:7px;border:1px solid rgba(45,212,138,.3);font-size:11px;color:var(--g5)"><i class="fas fa-check-circle"></i> ${name}</div>`;
+}
+async function saveManual(){
+  if(!selStudentId||!activeSess){toast('حدد الطالب والجلسة المفتوحة','tr');return;}
+  const st=document.getElementById('m-st').value;
+  const {error}=await sb.from('attendance_records').insert({
+    student_id:selStudentId,course_name:activeSess.course_name,
+    lecture_number:activeSess.lecture_number,status:st,
+    lecture_date:new Date().toISOString().split('T')[0]
+  });
+  if(error){toast('خطأ: '+error.message,'tr');return;}
+  closeOv('manual-ov');selStudentId=null;
+  await fetchLive();toast('تم التسجيل ✓','tg');
+}
+
+// ── REPORTS ──
+async function loadReports(){
+  let q=sb.from('attendance_records').select('*,students(full_name,university_number)').order('recorded_at',{ascending:false}).limit(80);
+  const fc=document.getElementById('f-course')?.value;
+  const fs=document.getElementById('f-status')?.value;
+  if(fs)q=q.eq('status',fs);
+  const {data}=await q;
+  const rows=(data||[]).filter(r=>!fc||r.course_name===fc);
+  const tbody=document.getElementById('rep-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=rows.length?rows.map(r=>`
+    <tr>
+      <td>${r.students?.full_name||'--'}</td>
       <td>${r.students?.university_number||'--'}</td>
       <td>${r.course_name||'--'}</td>
       <td>محاضرة ${r.lecture_number||'--'}</td>
       <td>${r.lecture_date?new Date(r.lecture_date).toLocaleDateString('ar-SY'):'--'}</td>
-      <td><span class="badge ${r.status==='present'?'bg':r.status==='absent'?'br':'ba'}">${r.status==='present'?'حاضر':r.status==='absent'?'غائب':'متأخر'}</span></td>
-      <td>${r.recorded_at?new Date(r.recorded_at).toLocaleTimeString('ar-SY',{hour:'2-digit',minute:'2-digit'}):'--'}</td>
+      <td><span class="bd ${r.status==='present'?'bd-g':r.status==='absent'?'bd-r':'bd-a'}">${r.status==='present'?'حاضر':r.status==='absent'?'غائب':'متأخر'}</span></td>
     </tr>`).join('')
-    : '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text3)">لا توجد سجلات</td></tr>';
+    :'<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--muted)">لا توجد سجلات</td></tr>';
 }
 
-function exportReports(type) { toast('سيتم تصدير التقرير بصيغة ' + (type||'PDF') + ' قريباً', 'info'); }
-function exportSessionReport() { toast('تم حفظ تقرير الجلسة', 'success'); }
+// ── STATS ──
+async function loadStats(){
+  const {data}=await sb.from('attendance_records').select('status');
+  const tot=(data||[]).length||1;
+  const pres=(data||[]).filter(r=>r.status==='present').length;
+  document.getElementById('h-avg').textContent=Math.round(pres/tot*100)+'%';
+  // students count
+  const {count}=await sb.from('students').select('*',{count:'exact',head:true});
+  document.getElementById('h-students').textContent=count||0;
+  loadTodayLecs();loadRecentSess();loadReports();
+}
 
-// ===== NOTIFICATIONS =====
-async function loadNotifications() {
-  // Doctor notifications from a general notifications table or system
-  const el = document.getElementById('notif-list');
-  if (!el) return;
-  const items = [
-    { title:'طالب سجّل حضوراً متأخراً', body:'أحمد خالد سجّل حضوره بعد 20 دقيقة من بدء المحاضرة', time:'منذ ساعة', unread:true },
-    { title:'نسبة غياب عالية', body:'7 طلاب من شعبة ب لم يحضروا آخر 3 محاضرات', time:'أمس', unread:true },
-    { title:'تذكير: محاضرة غداً', body:'رياضيات 2 - قاعة 204 - الساعة 10:00', time:'أمس', unread:false },
-  ];
-  document.getElementById('notif-nb').textContent = items.filter(i=>i.unread).length;
-  document.getElementById('notif-dot').style.display = items.some(i=>i.unread) ? 'block' : 'none';
-  el.innerHTML = items.map(n=>`
-    <div style="display:flex;gap:10px;padding:14px;border-bottom:1px solid var(--border);cursor:pointer;${n.unread?'border-right:3px solid var(--blue);':''}" onclick="this.style.borderRight='none'">
-      ${n.unread ? '<div style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:4px"></div>' : '<div style="width:7px"></div>'}
-      <div><div style="font-size:12px;font-weight:600">${n.title}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${n.body}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px">${n.time}</div></div>
+function loadTodayLecs(){
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const today=days[new Date().getDay()];
+  const tl=lectures.filter(l=>l.day_of_week===today);
+  const el=document.getElementById('h-today');if(!el)return;
+  const cols=['#2dd48a','#60a5fa','#fbbf24','#f87171'];
+  el.innerHTML=tl.length?tl.map((l,i)=>`
+    <div class="cp" style="padding:9px 11px;cursor:pointer" onclick="quickOpenSessById('${l.id}')">
+      <div class="cp-dot" style="background:${cols[i%cols.length]};height:28px"></div>
+      <div style="flex:1"><div class="cp-name">${l.course_name}</div><div class="cp-meta">${l.start_time||'--'}–${l.end_time||'--'} · قاعة ${l.room||'--'}</div></div>
+      ${l.is_active?'<span class="bd bd-g">مفتوحة</span>':''}
+    </div>`).join('')
+    :'<p style="text-align:center;color:var(--muted);font-size:11px;padding:14px">لا محاضرات اليوم</p>';
+}
+
+async function loadRecentSess(){
+  const {data}=await sb.from('lectures').select('*').order('id',{ascending:false}).limit(4);
+  const el=document.getElementById('h-recent');if(!el)return;
+  if(!data?.length){el.innerHTML='<p style="text-align:center;color:var(--muted);font-size:11px;padding:14px">--</p>';return;}
+  el.innerHTML=data.map(l=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1"><div style="font-size:11px;font-weight:600">${l.course_name}</div><div style="font-size:10px;color:var(--muted)">محاضرة ${l.lecture_number} · ${l.day_of_week||'--'}</div></div>
+      ${l.is_active?'<span class="bd bd-g">مفتوحة</span>':'<span class="bd bd-b">منتهية</span>'}
     </div>`).join('');
 }
 
-function markAllRead() {
-  document.querySelectorAll('#notif-list > div').forEach(el => el.style.borderRight = 'none');
-  document.getElementById('notif-nb').textContent = '0';
-  document.getElementById('notif-dot').style.display = 'none';
-  toast('تم تعليم كل الإشعارات كمقروءة', 'success');
-}
-
-// ===== PASSWORD =====
-async function changePassword() {
-  const p1 = document.getElementById('new-pass').value;
-  const p2 = document.getElementById('new-pass2').value;
-  if (!p1||!p2) { toast('أدخل كلمة المرور الجديدة', 'error'); return; }
-  if (p1 !== p2) { toast('كلمتا المرور غير متطابقتين', 'error'); return; }
-  if (p1.length < 8) { toast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error'); return; }
-  const { error } = await sb.auth.updateUser({ password: p1 });
-  if (error) { toast('خطأ: ' + error.message, 'error'); return; }
-  toast('تم تغيير كلمة المرور بنجاح', 'success');
-  document.getElementById('new-pass').value = ''; document.getElementById('new-pass2').value = '';
-}
-
-// ===== HELPERS =====
-function showApp() {
-  document.getElementById('auth-section').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  loadReports();
-}
-function showSec(id) {
-  document.querySelectorAll('.sec').forEach(s => { s.classList.remove('active'); s.classList.add('hidden'); });
-  const el = document.getElementById('sec-'+id);
-  if (el) { el.classList.remove('hidden'); el.classList.add('active'); }
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const titles = {home:'لوحة التحكم',courses:'موادي الدراسية',schedule:'جدول المحاضرات',session:'جلسة الحضور',reports:'تقارير الحضور',students:'قوائم الطلاب',profile:'ملفي الشخصي',notifications:'الإشعارات'};
-  document.getElementById('tb-title').textContent = titles[id]||id;
+// ── NAV ──
+const titles={home:'الرئيسية',courses:'موادي',schedule:'الجدول',session:'جلسة الحضور',reports:'التقارير',profile:'حسابي'};
+function go(id){
+  document.querySelectorAll('.pg').forEach(p=>{p.classList.remove('on');p.classList.add('h');});
+  const pg=document.getElementById('pg-'+id);if(pg){pg.classList.add('on');pg.classList.remove('h');}
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>{if(n.textContent.includes(titles[id]?.slice(0,4)))n.classList.add('on');});
+  document.getElementById('tb-t').textContent=titles[id]||id;
   closeSb();
-  if (id==='session' && activeSession) renderActiveSession();
-  if (id==='reports') loadReports();
-}
-function openSb() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sb-overlay').classList.add('visible'); }
-function closeSb() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-overlay').classList.remove('visible'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-function setBtnLoad(btn, loading, label) {
-  if (!btn) return;
-  btn.disabled = loading;
-  btn.innerHTML = loading ? '<i class="fas fa-spinner fa-spin"></i> ' + label : label;
-}
-function toast(msg, type='info') {
-  const el = document.getElementById('toast');
-  const icons = {success:'fa-check-circle',error:'fa-exclamation-circle',info:'fa-info-circle'};
-  el.innerHTML = `<i class="fas ${icons[type]}"></i> ${msg}`;
-  el.className = `toast toast-${type} show`;
-  setTimeout(() => el.classList.remove('show'), 3500);
-}
-function editAttStatus(id) { toast('يمكن تعديل الحالة من جدول التقارير', 'info'); }
-function showCourseDetail(id) { showSec('reports'); }
-
-// ===== SCHEDULE =====
-let scheduleData = [];
-let currentMonth = new Date();
-let currentDay = new Date();
-let currentTab = 'weekly';
-
-function switchSchedTab(tab) {
-  currentTab = tab;
-  ['weekly','monthly','daily'].forEach(t => {
-    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
-    document.getElementById('view-'+t).classList.toggle('hidden', t!==tab);
-  });
-  if (tab==='monthly') renderMonthlyCalendar();
-  if (tab==='daily') renderDailyView();
-  if (tab==='weekly') renderWeeklyView();
+  if(id==='session'&&activeSess){}
+  if(id==='reports')loadReports();
+  if(id==='schedule'){renderSchedule();renderLecTable();}
 }
 
-async function loadSchedule() {
-  const { data } = await sb.from('lectures').select('*').order('day_of_week');
-  scheduleData = data || [];
-  renderWeeklyView();
-  renderScheduleTable();
+// ── PASSWORD ──
+async function changePass(){
+  const p1=document.getElementById('np1').value;const p2=document.getElementById('np2').value;
+  if(!p1||p1!==p2){toast('كلمتا المرور غير متطابقتين','tr');return;}
+  if(p1.length<8){toast('8 أحرف على الأقل','tr');return;}
+  const {error}=await sb.auth.updateUser({password:p1});
+  if(error){toast('خطأ: '+error.message,'tr');return;}
+  toast('تم تغيير كلمة المرور ✓','tg');
+  document.getElementById('np1').value='';document.getElementById('np2').value='';
 }
 
-function renderWeeklyView() {
-  const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
-  const colors = {'الأحد':'#3b82f6','الاثنين':'#22c55e','الثلاثاء':'#f59e0b','الأربعاء':'#a78bfa','الخميس':'#ef4444'};
-  const el = document.getElementById('weekly-grid');
-  if (!el) return;
-  el.innerHTML = days.map(day => {
-    const dayLecs = scheduleData.filter(l => l.day_of_week === day);
-    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden">
-      <div style="background:${colors[day]||'var(--blue)'};padding:10px 14px;font-size:12px;font-weight:700;color:white;display:flex;justify-content:space-between;align-items:center">
-        <span>${day}</span><span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:1px 8px;font-size:10px">${dayLecs.length} محاضرة</span>
-      </div>
-      <div style="padding:10px">
-        ${dayLecs.length ? dayLecs.map(l => `
-          <div style="padding:8px;background:var(--bg2);border-radius:8px;margin-bottom:6px;border-right:3px solid ${colors[day]||'var(--blue)'};cursor:pointer" onclick="showLectureDetail('${l.id}')">
-            <div style="font-size:11px;font-weight:600">${l.course_name||'--'}</div>
-            <div style="font-size:10px;color:var(--text3);margin-top:2px">${l.start_time||'--'} – ${l.end_time||'--'} · قاعة ${l.room||'--'}</div>
-            <div style="margin-top:4px"><span class="code-pill">${l.qr_code||'---'}</span></div>
-          </div>`).join('')
-        : `<div style="text-align:center;color:var(--text3);font-size:11px;padding:14px;opacity:0.6">لا محاضرات</div>`}
-        <button onclick="openAddLectureModalFor('${day}')" style="width:100%;background:none;border:1px dashed var(--border);border-radius:8px;padding:6px;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--font);margin-top:4px">
-          <i class="fas fa-plus"></i> إضافة
-        </button>
-      </div>
-    </div>`;
-  }).join('');
+// ── HELPERS ──
+function openAddCourseModal(){document.getElementById('add-course-ov').classList.remove('h');}
+function closeOv(id){document.getElementById(id).classList.add('h');}
+function openSb(){document.getElementById('sb').classList.add('open');document.getElementById('sb-ov').classList.add('vis');}
+function closeSb(){document.getElementById('sb').classList.remove('open');document.getElementById('sb-ov').classList.remove('vis');}
+function toast(msg,cls='ti'){
+  const el=document.getElementById('toast-el');
+  el.textContent=msg;el.className='toast show '+cls;
+  setTimeout(()=>el.classList.remove('show'),3200);
 }
-
-function renderMonthlyCalendar() {
-  const el = document.getElementById('monthly-calendar');
-  const lbl = document.getElementById('month-label');
-  if (!el || !lbl) return;
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  lbl.textContent = currentMonth.toLocaleDateString('ar-SY', { year:'numeric', month:'long' });
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-  const dayNames = ['أح','اث','ث','أر','خ','ج','س'];
-  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px">
-    ${dayNames.map(d=>`<div style="text-align:center;font-size:10px;color:var(--text3);padding:4px">${d}</div>`).join('')}
-  </div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">`;
-  for (let i = 0; i < firstDay; i++) html += `<div></div>`;
-  const arabicDays = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(year, month, d);
-    const dayName = arabicDays[date.getDay()];
-    const lecs = scheduleData.filter(l => l.day_of_week === dayName);
-    const isToday = date.toDateString() === today.toDateString();
-    html += `<div class="day-cell ${isToday?'today':''} ${lecs.length?'has-lecture':''}" onclick="selectDay(${year},${month},${d})">
-      <div style="font-size:11px;font-weight:${isToday?'700':'400'};color:${isToday?'var(--blue-l)':'var(--text2)'};margin-bottom:3px">${d}</div>
-      <div>${lecs.slice(0,2).map(l=>`<div class="lec-dot ${l.is_active?'active':''}"></div>`).join('')}</div>
-      ${lecs.length > 2 ? `<div style="font-size:9px;color:var(--text3)">+${lecs.length-2}</div>` : ''}
-    </div>`;
-  }
-  el.innerHTML = html + '</div>';
-}
-
-function changeMonth(dir) { currentMonth.setMonth(currentMonth.getMonth() - dir); renderMonthlyCalendar(); }
-
-function selectDay(y, m, d) {
-  currentDay = new Date(y, m, d);
-  switchSchedTab('daily');
-}
-
-function renderDailyView() {
-  const el = document.getElementById('daily-schedule');
-  const lbl = document.getElementById('day-label');
-  if (!el || !lbl) return;
-  const arabicDays = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const dayName = arabicDays[currentDay.getDay()];
-  lbl.textContent = currentDay.toLocaleDateString('ar-SY', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  const lecs = scheduleData.filter(l => l.day_of_week === dayName);
-  const colors = ['#3b82f6','#22c55e','#f59e0b','#a78bfa','#ef4444'];
-  if (!lecs.length) { el.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;font-size:12px">لا توجد محاضرات في هذا اليوم</div>'; return; }
-  el.innerHTML = lecs.map((l,i) => `
-    <div class="time-slot">
-      <div class="time-label">${l.start_time||'--'}</div>
-      <div class="lec-block" style="border-right-color:${colors[i%colors.length]};cursor:pointer" onclick="showLectureDetail('${l.id}')">
-        <div class="lec-block-name">${l.course_name||'--'}</div>
-        <div class="lec-block-meta"><i class="fas fa-door-open" style="font-size:9px"></i> قاعة ${l.room||'--'} · شعبة ${l.section||'--'} · ${l.end_time||'--'}</div>
-        <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
-          <span class="code-pill"><i class="fas fa-key" style="font-size:8px"></i> ${l.qr_code||'---'}</span>
-          ${l.is_active ? '<span class="badge bg" style="font-size:9px">مفتوحة</span>' : ''}
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function changeDay(dir) { currentDay.setDate(currentDay.getDate() - dir); renderDailyView(); }
-
-function renderScheduleTable() {
-  const tbody = document.getElementById('schedule-tbody');
-  if (!tbody) return;
-  const colors = ['#3b82f6','#22c55e','#f59e0b','#a78bfa','#ef4444'];
-  tbody.innerHTML = scheduleData.length ? scheduleData.map((l,i) => `
-    <tr style="cursor:pointer" onclick="showLectureDetail('${l.id}')">
-      <td><div style="display:flex;align-items:center;gap:7px"><div style="width:3px;height:20px;border-radius:2px;background:${colors[i%colors.length]}"></div>${l.course_name||'--'}</div></td>
-      <td>${l.day_of_week||'--'}</td>
-      <td>${l.start_time||'--'} – ${l.end_time||'--'}</td>
-      <td>${l.room||'--'}</td>
-      <td>${l.section||'--'}</td>
-      <td>${l.lecture_number||'--'}</td>
-      <td><span class="code-pill">${l.qr_code||'---'}</span></td>
-      <td>${l.is_active ? '<span class="badge bg">مفتوحة</span>' : '<span class="badge bb">مجدولة</span>'}</td>
-      <td><div style="display:flex;gap:4px">
-        <button class="btn btn-blue btn-sm" onclick="event.stopPropagation();quickOpenSession('${l.id}')"><i class="fas fa-play"></i></button>
-        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteLecture('${l.id}')"><i class="fas fa-trash"></i></button>
-      </div></td>
-    </tr>`).join('')
-    : '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3)">لا توجد محاضرات مجدولة. اضغط "إضافة محاضرة" لإنشاء جدولك.</td></tr>';
-}
-
-function generateLectureCode(courseName, day, num) {
-  const courseInitials = (courseName||'LEC').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3);
-  const dayCode = {'الأحد':'SUN','الاثنين':'MON','الثلاثاء':'TUE','الأربعاء':'WED','الخميس':'THU'}[day] || 'LEC';
-  const rand = Math.random().toString(36).substr(2,4).toUpperCase();
-  return `${courseInitials}-${dayCode}-${String(num||1).padStart(2,'0')}-${rand}`;
-}
-
-function openAddLectureModal() {
-  const sel = document.getElementById('lec-course');
-  if (sel && allCourses.length) {
-    const unique = [...new Map(allCourses.map(c=>[c.course_name,c])).values()];
-    sel.innerHTML = unique.map(c=>`<option value="${c.id}" data-name="${c.course_name}" data-section="${c.section||''}">${c.course_name} - شعبة ${c.section||'--'}</option>`).join('');
-  }
-  updatePreviewCode();
-  document.getElementById('add-lec-modal').classList.remove('hidden');
-}
-
-function openAddLectureModalFor(day) {
-  openAddLectureModal();
-  const sel = document.getElementById('lec-day');
-  if (sel) sel.value = day;
-  updatePreviewCode();
-}
-
-function updatePreviewCode() {
-  const courseSel = document.getElementById('lec-course');
-  const day = document.getElementById('lec-day')?.value || '';
-  const num = document.getElementById('lec-num')?.value || '1';
-  const name = courseSel?.options[courseSel.selectedIndex]?.dataset?.name || '';
-  const code = generateLectureCode(name, day, num);
-  const el = document.getElementById('preview-code');
-  if (el) el.textContent = code;
-  return code;
-}
-
-['lec-course','lec-day','lec-num'].forEach(id => {
-  setTimeout(() => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', updatePreviewCode);
-  }, 500);
-});
-
-async function saveLecture() {
-  const courseSel = document.getElementById('lec-course');
-  const courseId = courseSel?.value;
-  const day = document.getElementById('lec-day').value;
-  const num = parseInt(document.getElementById('lec-num').value) || 1;
-  const start = document.getElementById('lec-start').value;
-  const end = document.getElementById('lec-end').value;
-  const room = document.getElementById('lec-room').value.trim() || '--';
-  const repeat = document.getElementById('lec-repeat').value;
-
-  if (!courseId || !start || !end) { toast('أكمل الحقول المطلوبة (المادة، الوقت)', 'error'); return; }
-
-  const course = allCourses.find(c=>c.id===courseId);
-  const code = updatePreviewCode();
-
-  const lectureData = {
-    course_name: course?.course_name || '',
-    faculty: course?.faculty || '',
-    department: course?.department || '',
-    section: course?.section || '',
-    instructor_id: currentUser?.id,
-    day_of_week: day,
-    start_time: start,
-    end_time: end,
-    room,
-    lecture_number: num,
-    qr_code: code,
-    is_active: false
-  };
-
-  // For weekly/monthly, create multiple records
-  if (repeat === 'weekly') {
-    const records = Array.from({length:14},(_,i)=>({...lectureData, qr_code: generateLectureCode(course?.course_name||'', day, num+i), lecture_number: num+i}));
-    const { error } = await sb.from('lectures').insert(records);
-    if (error) { toast('خطأ: ' + error.message, 'error'); return; }
-    toast(`تم إنشاء 14 محاضرة أسبوعية بأكواد فريدة ✓`, 'success');
-  } else if (repeat === 'monthly') {
-    const records = Array.from({length:4},(_,i)=>({...lectureData, qr_code: generateLectureCode(course?.course_name||'', day, num+i), lecture_number: num+i}));
-    const { error } = await sb.from('lectures').insert(records);
-    if (error) { toast('خطأ: ' + error.message, 'error'); return; }
-    toast(`تم إنشاء 4 محاضرات شهرية بأكواد فريدة ✓`, 'success');
-  } else {
-    const { error } = await sb.from('lectures').insert(lectureData);
-    if (error) { toast('خطأ: ' + error.message, 'error'); return; }
-    toast('تم إضافة المحاضرة بكودها الفريد ✓', 'success');
-  }
-
-  closeModal('add-lec-modal');
-  await loadSchedule();
-  await loadCourses();
-}
-
-function showLectureDetail(id) {
-  const l = scheduleData.find(x=>x.id===id);
-  if (!l) return;
-  document.getElementById('ldc-title').textContent = l.course_name || 'محاضرة';
-  document.getElementById('ldc-sub').textContent = `${l.day_of_week||''} · ${l.start_time||''}–${l.end_time||''} · قاعة ${l.room||'--'}`;
-  document.getElementById('ldc-content').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      ${[['المادة',l.course_name],['الشعبة',l.section],['القاعة',l.room],['الكلية',l.faculty],
-         ['اليوم',l.day_of_week],['الوقت',(l.start_time||'--')+'–'+(l.end_time||'--')],
-         ['رقم المحاضرة',l.lecture_number],['الحالة',l.is_active?'مفتوحة':'مجدولة']
-        ].map(([k,v])=>`<div style="background:var(--bg2);border-radius:8px;padding:10px"><div style="font-size:10px;color:var(--text3)">${k}</div><div style="font-size:12px;font-weight:500;margin-top:2px">${v||'--'}</div></div>`).join('')}
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:6px"><i class="fas fa-key"></i> كود المحاضرة الفريد</div>
-      <div style="font-family:monospace;font-size:18px;font-weight:800;color:var(--blue-l);letter-spacing:1px">${l.qr_code||'---'}</div>
-      <button onclick="copyCode('${l.qr_code}')" style="margin-top:8px;background:none;border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--font)"><i class="fas fa-copy"></i> نسخ الكود</button>
-    </div>`;
-  document.getElementById('ldc-open-btn').onclick = () => { closeModal('lec-detail-modal'); quickOpenSession(id); };
-  document.getElementById('ldc-delete-btn').onclick = () => deleteLecture(id);
-  document.getElementById('lec-detail-modal').classList.remove('hidden');
-}
-
-async function quickOpenSession(lectureId) {
-  const l = scheduleData.find(x=>x.id===lectureId);
-  if (!l) return;
-  await sb.from('lectures').update({ is_active: false }).eq('is_active', true);
-  await sb.from('lectures').update({ is_active: true }).eq('id', lectureId);
-  activeSession = { id: lectureId, course_name: l.course_name, section: l.section, room: l.room, lecture_number: l.lecture_number };
-  showSec('session');
-  renderActiveSession();
-  document.getElementById('active-session-badge').style.display = 'inline';
-  toast('تم فتح جلسة: ' + l.course_name, 'success');
-}
-
-async function deleteLecture(id) {
-  if (!confirm('هل تريد حذف هذه المحاضرة؟')) return;
-  const { error } = await sb.from('lectures').delete().eq('id', id);
-  if (error) { toast('خطأ في الحذف', 'error'); return; }
-  closeModal('lec-detail-modal');
-  toast('تم حذف المحاضرة', 'success');
-  await loadSchedule();
-}
-
-function copyCode(code) {
-  navigator.clipboard.writeText(code).then(() => toast('تم نسخ الكود: ' + code, 'success'));
-}
-
-setDate();
 </script>
 </body>
 </html>
